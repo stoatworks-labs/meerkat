@@ -206,3 +206,65 @@ async fn panasonic_http_probe_identifies_a_routed_camera() {
     assert_eq!(c.fields["power"], "on");
     assert!(!c.caps.write_network, "over a router Easy IP cannot re-address it");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_temporary_address_reaches_a_p_series_on_its_fallback_address() {
+    let (_sim, engine) = rig().await;
+    let (cams, _) = scan(&engine).await;
+    let q = cams.iter().find(|c| c.ip == ip("192.168.100.100")).unwrap().clone();
+    assert_eq!(q.reach, Reach::Mismatch { iface: "sim0".into() });
+
+    let a = engine.plan_alias(&q.id).expect("plan");
+    assert_eq!((a.iface.as_str(), a.ip, a.prefix), ("sim0", ip("192.168.100.253"), 24));
+    let now = engine.add_alias(a.clone()).await.expect("add");
+    assert_eq!(now.iter().find(|c| c.id == q.id).unwrap().reach, Reach::Local { iface: "sim0".into() });
+    assert!(engine.interfaces().unwrap().iter().any(|i| i.ip == a.ip));
+    assert!(engine.add_alias(a.clone()).await.unwrap_err().contains("overlaps"), "the same subnet twice");
+
+    // The next scan has BirdDog's API confirm it: a P-series, so its web UI
+    // is the way in, and that now opens.
+    let (cams, logs) = scan(&engine).await;
+    assert!(!logs.iter().any(|l| l.contains("192.168.100.253/24")), "no broadcasts out of the temporary address: {logs:#?}");
+    let b = cams.iter().find(|c| c.ip == ip("192.168.100.100")).unwrap().clone();
+    assert_eq!((b.driver.as_str(), b.model.as_deref()), ("birddog", Some("P400")), "{b:#?}");
+    assert!(!b.caps.write_network);
+    let page = meerkat_core::http::Http::new(Duration::from_secs(2)).get(&engine.browser_url(b.web_url.as_deref().unwrap()), None).await.unwrap();
+    assert!(page.body.contains("P400"), "{}", page.body);
+
+    // Gone again: back on the wrong subnet, not "routed".
+    let after = engine.remove_aliases(None).await.expect("remove");
+    assert!(engine.aliases().is_empty());
+    assert_eq!(after.iter().find(|c| c.id == b.id).unwrap().reach, Reach::Mismatch { iface: "sim0".into() });
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_temporary_address_lets_an_http_driver_readdress_a_wrong_subnet_camera() {
+    let mut cams = demo_cameras();
+    let x1 = cams.iter_mut().find(|c| c.mac == "80:27:b6:26:08:f9".parse::<Mac>().unwrap()).unwrap();
+    x1.ip = ip("192.168.50.40");
+    x1.gateway = ip("192.168.50.1");
+    let sim = Sim::start(cams).await.expect("simulator");
+    let engine = Engine::sandboxed(meerkat_drivers::all(), sim.sandbox());
+
+    // Heard over NDI, out of reach: no driver can change it from here.
+    let (found, _) = scan(&engine).await;
+    let row = found.iter().find(|c| c.ip == ip("192.168.50.40")).unwrap().clone();
+    assert_eq!((row.driver.as_str(), row.reach.clone()), ("ndi", Reach::Mismatch { iface: "sim0".into() }));
+    assert!(!row.caps.write_network);
+
+    let a = engine.plan_alias(&row.id).expect("plan");
+    assert_eq!(a.ip, ip("192.168.50.253"));
+    engine.add_alias(a).await.expect("add");
+    let (found, _) = scan(&engine).await;
+    let b = by_mac(&found, "80:27:b6:26:08:f9");
+    assert_eq!((b.driver.as_str(), b.reach.clone()), ("birddog", Reach::Local { iface: "sim0".into() }));
+    assert!(b.caps.write_network, "X-series: /EthSetup, now that it is reachable");
+
+    // Onto this computer's own subnet, then the temporary address can go.
+    let out = engine.write_network(&b.id, net("192.168.10.50", "192.168.10.1"), None).await.expect("write");
+    let out = meerkat_core::WriteOutcome { settle_ms: 0, ..out };
+    let back = engine.verify(&b.id, &out, Duration::from_secs(5), |_| {}).await.unwrap().expect("found again");
+    assert_eq!((back.id.as_str(), back.ip), (b.id.as_str(), ip("192.168.10.50")));
+    engine.remove_aliases(None).await.expect("remove");
+    assert_eq!(engine.camera(&b.id).unwrap().reach, Reach::Local { iface: "sim0".into() });
+}

@@ -3,6 +3,7 @@ import { Fragment, useState } from 'react';
 import { inSubnet, parseIp, parsePrefix, prefixToMask, problems, suggest } from '../lib/net';
 import { useStore } from '../store';
 import type { Camera, Credentials, NetConfig } from '../types';
+import { ReachIt } from './ReachIt';
 import { label, reachNote, ReachBadge, sightings, Spinner, title } from './ui';
 
 export function Detail() {
@@ -27,8 +28,10 @@ const FIELD_NAMES: Record<string, string> = {
 };
 
 function DetailFor({ cam }: { cam: Camera }) {
-  const { drivers, ifaces, cameras, jobs, select, apply, readNetwork, openWeb, forget } = useStore();
+  const { drivers, ifaces, cameras, jobs, select, apply, readNetwork, openWeb, forget, openRecovery } = useStore();
   const driver = drivers.find((d) => d.id === cam.driver);
+  // The vendor's own tool for a camera that cannot be changed from here.
+  const rescue = drivers.find((d) => d.recovery && d.vendor === cam.vendor);
   const job = jobs[cam.id];
   const busy = job?.state === 'sending' || job?.state === 'waiting';
   const net = cam.net;
@@ -106,6 +109,7 @@ function DetailFor({ cam }: { cam: Camera }) {
       </div>
 
       {note && <p className={`note ${cam.reach.kind === 'mismatch' ? 'warn' : ''}`}>{note}</p>}
+      {cam.reach.kind === 'mismatch' && <ReachIt cam={cam} />}
 
       <dl className="facts">
         <dt>Address</dt>
@@ -166,13 +170,25 @@ function DetailFor({ cam }: { cam: Camera }) {
       <section className="netform">
         <h3>Network settings</h3>
         {!cam.caps.writeNetwork ? (
-          <p className="muted">
-            {cam.driver === 'ndi'
-              ? 'Heard over NDI only, and no driver here can change it. Set its address in its web UI.'
-              : `The ${driver?.vendor ?? cam.driver} driver cannot change this camera's settings${cam.fields.api ? ` (${cam.fields.api})` : ''} — use its web UI.`}
-          </p>
+          <>
+            <p className="muted">
+              {cam.driver === 'ndi'
+                ? cam.reach.kind === 'mismatch'
+                  ? 'Heard over NDI only. Once this computer can reach it, its own driver may be able to change it; otherwise set its address in its web UI.'
+                  : 'Heard over NDI only, and no driver here can change it. Set its address in its web UI.'
+                : `The ${driver?.vendor ?? cam.driver} driver cannot change this camera's settings${cam.fields.api ? ` (${cam.fields.api})` : ''} — use its web UI.`}
+            </p>
+            {rescue?.recovery && (
+              <button type="button" className="link" onClick={() => openRecovery(rescue.id)}>
+                Lost at an address nothing reaches? Reset its network with {rescue.recovery.tool}…
+              </button>
+            )}
+          </>
         ) : !canWrite ? (
-          <p className="muted">Put this computer on {cam.ip}'s subnet to change it: this driver works over HTTP, which cannot reach a camera on another subnet.</p>
+          <p className="muted">
+            This driver works over HTTP, which cannot reach a camera on another subnet: add a temporary address above, or put this computer on {cam.ip}'s
+            subnet.
+          </p>
         ) : (
           <form
             onSubmit={(e) => {

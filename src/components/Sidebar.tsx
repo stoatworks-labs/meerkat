@@ -1,7 +1,9 @@
 import { useStore, usable } from '../store';
 
 export function Sidebar() {
-  const { ifaces, drivers, scope, setScope, info, setDemo, scanning } = useStore();
+  const { ifaces, drivers, scope, setScope, info, setDemo, scanning, aliases, removeAlias, openRecovery } = useStore();
+  const isAlias = (name: string, ip: string) => aliases.some((a) => a.iface === name && a.ip === ip);
+  const tools = drivers.filter((d) => d.recovery);
   const allIfaces = scope.ifaces === null;
   const chosenIfaces = scope.ifaces ?? ifaces.filter(usable).map((i) => i.name);
   const chosenDrivers = scope.drivers ?? drivers.filter((d) => d.enabledByDefault).map((d) => d.id);
@@ -27,7 +29,7 @@ export function Sidebar() {
         </header>
         <p className="hint">Broadcast discovery goes out of each one, and finds cameras on the wrong subnet too.</p>
         <ul className="checks">
-          {ifaces.map((i) => {
+          {ifaces.filter((i) => !isAlias(i.name, i.ip)).map((i) => {
             const why = i.loopback ? 'loopback' : i.p2p ? 'VPN / tunnel' : i.linkLocal ? 'link-local' : '';
             const on = allIfaces ? usable(i) : chosenIfaces.includes(i.name);
             return (
@@ -45,6 +47,26 @@ export function Sidebar() {
           {ifaces.length === 0 && <li className="muted">No IPv4 interfaces.</li>}
         </ul>
       </section>
+
+      {aliases.length > 0 && (
+        <section aria-label="Temporary addresses">
+          <h2>Temporary addresses</h2>
+          <p className="hint">Added to reach cameras on another subnet. Removed when Meerkat quits.</p>
+          <ul className="aliases">
+            {aliases.map((a) => (
+              <li key={`${a.iface}-${a.ip}`}>
+                <span className="mono">{a.iface}</span>
+                <span className="mono">
+                  {a.ip}/{a.prefix}
+                </span>
+                <button type="button" className="link" disabled={scanning} onClick={() => void removeAlias(a)}>
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section>
         <h2>Routed subnets</h2>
@@ -78,6 +100,25 @@ export function Sidebar() {
           </button>
         )}
       </section>
+
+      {tools.length > 0 && (
+        <section>
+          <h2>Lost a camera?</h2>
+          <p className="hint">When nothing can reach it, its maker’s own reset tool.</p>
+          <ul className="plain tools">
+            {tools.map((d) => (
+              <li key={d.id}>
+                <button type="button" className="link" onClick={() => openRecovery(d.id)}>
+                  {d.recovery!.tool}…
+                </button>{' '}
+                <span className="muted small">
+                  {d.vendor} {d.recovery!.models}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section>
         <h2>Listen for</h2>

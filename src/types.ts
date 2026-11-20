@@ -81,6 +81,26 @@ export interface DriverInfo {
   defaultLogin: { username: string; password: string } | null;
   notes: string[];
   enabledByDefault: boolean;
+  recovery: Recovery | null;
+}
+
+/** A vendor's own tool for a camera nothing else can reach (driver.rs). */
+export interface Recovery {
+  tool: string;
+  url: string;
+  models: string;
+  does: string;
+  steps: string[];
+  after: string;
+  fallback: string | null;
+}
+
+/** A temporary second address on an interface (alias.rs). */
+export interface Alias {
+  iface: string;
+  index: number | null;
+  ip: string;
+  prefix: number;
 }
 
 export interface ScanRequest {

@@ -4,9 +4,9 @@
 // behaviour is a sketch: a write moves the camera and nothing more. The
 // protocols themselves are tested in Rust against meerkat-sim.
 
-import type { Camera, DriverInfo, EngineEvent, NetConfig, WriteOutcome } from '../types';
+import type { Alias, Camera, DriverInfo, EngineEvent, LocalIface, NetConfig, WriteOutcome } from '../types';
 import type { Backend } from './ipc';
-import { inSubnet } from './net';
+import { fmtIp, inSubnet, network, parseIp } from './net';
 import fixtureCameras from './fixtures/cameras.json';
 import fixtureDrivers from './fixtures/drivers.json';
 import fixtureIfaces from './fixtures/ifaces.json';
@@ -19,14 +19,25 @@ export function mockBackend(): Backend {
   const listeners = new Set<(e: EngineEvent) => void>();
   const emit = (e: EngineEvent) => listeners.forEach((l) => l(e));
   const sim0 = fixtureIfaces[0];
+  let aliases: Alias[] = [];
   let cancel = false;
 
-  const reach = (c: Camera): Camera['reach'] => (inSubnet(c.ip, sim0.ip, sim0.prefix) ? { kind: 'local', iface: 'sim0' } : { kind: 'mismatch', iface: 'sim0' });
+  const ifaces = (): LocalIface[] => [
+    ...fixtureIfaces,
+    ...aliases.map((a) => ({ name: a.iface, index: a.index, ip: a.ip, prefix: a.prefix, broadcast: null, loopback: false, p2p: false, linkLocal: false })),
+  ];
+  const reach = (c: Camera): Camera['reach'] =>
+    ifaces().some((i) => inSubnet(c.ip, i.ip, i.prefix)) ? { kind: 'local', iface: 'sim0' } : { kind: 'mismatch', iface: 'sim0' };
+  const refresh = () => {
+    for (const [id, c] of found) found.set(id, { ...c, reach: reach(c) });
+    for (const [id, c] of all) all.set(id, { ...c, reach: reach(c) });
+    return [...found.values()];
+  };
 
   return {
     appInfo: async () => ({ version: '0.1.0', demo: true, platform: 'browser' }),
     setDemo: async () => ({ version: '0.1.0', demo: true, platform: 'browser' }),
-    interfaces: async () => fixtureIfaces,
+    interfaces: async () => ifaces(),
     drivers: async () => fixtureDrivers as DriverInfo[],
     cameras: async () => [...found.values()],
     async scan(req) {
@@ -40,8 +51,9 @@ export function mockBackend(): Backend {
         if (req.drivers.length && !c.seen.some((s) => req.drivers.includes(s.driver))) continue;
         await sleep(90 + Math.random() * 160);
         const isNew = !found.has(c.id);
-        found.set(c.id, structuredClone(c));
-        emit({ type: 'camera', camera: structuredClone(c), replaces: [] });
+        const now = { ...structuredClone(c), reach: reach(c) };
+        found.set(c.id, now);
+        emit({ type: 'camera', camera: structuredClone(now), replaces: [] });
         if (isNew) n++;
       }
       const summary = { cameras: found.size, new: n, hostsSwept: 0, elapsedMs: Math.round(performance.now() - t0), cancelled: cancel };
@@ -89,6 +101,31 @@ export function mockBackend(): Backend {
       const c = found.get(id);
       if (!c?.webUrl) throw 'this camera has no web UI address';
       return c.webUrl;
+    },
+    aliases: async () => aliases,
+    async planAlias(id) {
+      const c = found.get(id);
+      if (!c) throw 'that camera is no longer in the list; scan again';
+      if (c.reach.kind !== 'mismatch') throw `${c.ip} is already on ${c.reach.kind === 'local' ? c.reach.iface : 'a reachable'} subnet`;
+      const taken = new Set([...found.values()].map((o) => o.ip));
+      const base = parseIp(network(c.ip, 24))!;
+      for (let h = 253; h > 1; h--) {
+        const ip = fmtIp(base + h);
+        if (!taken.has(ip)) return { iface: sim0.name, index: null, ip, prefix: 24 };
+      }
+      throw 'no free address left';
+    },
+    async addAlias(a) {
+      const clash = ifaces().find((i) => inSubnet(a.ip, i.ip, Math.min(i.prefix, a.prefix)));
+      if (clash) throw `${a.ip}/${a.prefix} overlaps ${clash.ip}/${clash.prefix} on ${clash.name}, a network this computer is already on`;
+      await sleep(700); // the admin password dialog
+      aliases = [...aliases, a];
+      return refresh();
+    },
+    async removeAliases(only) {
+      await sleep(400);
+      aliases = only ? aliases.filter((a) => !only.some((o) => o.iface === a.iface && o.ip === a.ip)) : [];
+      return refresh();
     },
     async onEvent(cb) {
       listeners.add(cb);

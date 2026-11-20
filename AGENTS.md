@@ -19,7 +19,8 @@ mDNS and sockets bound to each interface. A browser can do none of them.
 src/                     React UI: store.ts (zustand), lib/ipc.ts (Tauri or mock), lib/net.ts
 src-tauri/src/lib.rs     Tauri commands: a thin layer over the engine, plus its mock-runtime test
 src-tauri/crates/
-  meerkat-core/          Engine, registry (merge), Driver trait, contexts, net helpers, Http
+  meerkat-core/          Engine, registry (merge), Driver trait, contexts, net helpers, Http,
+                         alias (temporary addresses)
   meerkat-drivers/       panasonic, sony, birddog, vhd, onvif, ndi (+ udp/util helpers)
   meerkat-sim/           Simulated cameras for every protocol, and tests/e2e.rs
   meerkat-cli/           The engine from a terminal (binary meerkat-cli)
@@ -44,6 +45,36 @@ docs/drivers.md          How to add a brand
    and an equal-priority driver cannot steal it. Every sighting is kept in `seen`.
 6. **Reach.** Local (inside an interface's subnet), Routed (answered a unicast probe across a
    router), Mismatch (heard at layer 2 on an interface whose subnet it is outside), or Unknown.
+   A unicast sighting counts as Routed only when its `via` is a routed range, not an interface
+   name: phase 2 probes go out of an interface, and must not turn a Mismatch row into Routed.
+
+### Temporary addresses (alias.rs)
+
+A Mismatch camera that only talks HTTP can be reached by giving the interface that heard it a
+second address in the camera's subnet. `alias::plan` picks one (the camera's subnet clamped to
+/24–/30, from the top down, skipping .254, .1, the camera, its gateway and every camera in the
+table). `alias::check` refuses a bad prefix, an interface name that is not plain, a network or
+broadcast address, and any overlap with a subnet an interface is already on.
+`Engine::add_alias` runs it through an `AliasBackend`: `SystemAliases` runs `ifconfig … alias`
+through an administrator prompt (macOS), `ip addr add` through `pkexec` (Linux) or
+`New-NetIPAddress -SkipAsSource -PolicyStore ActiveStore` through an elevated PowerShell
+(Windows); none of them survive a restart. The sandbox gets `NoAliases`, which changes nothing,
+and adds the alias to `sim0`'s list instead.
+
+- Aliases are left out of the scan legs, so a layer-2 write is not sent twice, but they are in
+  `interfaces()`, so reach sees them. `refresh_reach` recomputes every row after a change.
+- The app removes every alias on exit (`RunEvent::Exit`), and `set_demo` refuses to switch
+  while any exist.
+- The system commands are checked as strings in the unit tests. They have not yet been run on
+  a real interface.
+
+### Recovery tools
+
+`DriverInfo::recovery` names a vendor's own tool for a camera nothing can reach (BirdDog
+Neuralyzer). The UI shows its steps and a link, then watches: repeated scans with every default
+driver, plus a unicast probe of `fallback`, for up to five minutes, listing that vendor's cameras
+that are new or at a new address. Meerkat does not speak the tool's protocol: it is not
+published.
 
 Writes go through `Engine::write_network`, which checks caps, validity, DHCP support, address
 clashes and reachability before calling the driver. Then `Engine::verify` rediscovers the
@@ -75,7 +106,8 @@ through the same route, and `Engine::browser_url` does it for Open web UI. A dri
   is at most 8 characters.
 - **BirdDog:** found through NDI and confirmed on :8080. X-series and MAX (firmware 6.x) take
   `/EthSetup` and then a reboot. P-series and converters (5.5.x) have no network API: they get
-  a web UI link only. Out of the box a BirdDog uses DHCP, falling back to 192.168.100.100.
+  a web UI link only, and a camera lost at an unreachable address goes to Neuralyzer.
+  Out of the box a BirdDog uses DHCP, falling back to 192.168.100.100.
 - **ONVIF:** UsernameToken digest. It needs the camera's login for both reads and writes.
 - **VHD (PTZOptics):** discovery only, because the set dialect is unverified.
 - **NDI:** sources at this computer's own addresses are skipped (its own NDI outputs).

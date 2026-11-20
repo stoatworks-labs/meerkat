@@ -18,7 +18,8 @@
       "Cameras with user authentication on need their admin login. UE160-generation cameras with authentication on use an encrypted variant Meerkat does not speak: use the web UI or switch authentication off first.",
       "Switching a camera to DHCP is not possible over Easy IP; set it in the web UI."
     ],
-    "enabledByDefault": true
+    "enabledByDefault": true,
+    "recovery": null
   },
   {
     "id": "sony",
@@ -39,7 +40,8 @@
       "Switching a camera to DHCP is not possible this way; use its web UI.",
       "Layer 2 only: it re-addresses a camera on the wrong subnet, but cannot cross a router."
     ],
-    "enabledByDefault": true
+    "enabledByDefault": true,
+    "recovery": null
   },
   {
     "id": "birddog",
@@ -59,7 +61,20 @@
       "Out of the box a BirdDog uses DHCP and falls back to 192.168.100.100/24 after about 30 seconds without a lease.",
       "The camera reboots to apply a new address; Meerkat waits for it to come back."
     ],
-    "enabledByDefault": true
+    "enabledByDefault": true,
+    "recovery": {
+      "tool": "BirdDog Neuralyzer",
+      "url": "https://birddog.tv/neuralyzer",
+      "models": "P-series",
+      "does": "Resets a camera's network settings to the factory defaults, for a camera that no longer answers at the address it was given.",
+      "steps": [
+        "Download BirdDog Neuralyzer from BirdDog and run it on a computer on the same network switch as the camera. BirdDog says the camera needs current firmware for it to work.",
+        "Use it to reset the camera's network settings.",
+        "Come back here and press Watch for it: Meerkat scans until the camera turns up again."
+      ],
+      "after": "Out of the box a BirdDog uses DHCP, and falls back to 192.168.100.100/24 when no DHCP server answers.",
+      "fallback": "192.168.100.100"
+    }
   },
   {
     "id": "vhd",
@@ -78,7 +93,8 @@
       "Discovery only: the platform's set command is not verified on hardware, so change these cameras' addresses in their web UI, or over ONVIF.",
       "Seen on PTZOptics and other cameras built on the ValueHD platform."
     ],
-    "enabledByDefault": true
+    "enabledByDefault": true,
+    "recovery": null
   },
   {
     "id": "onvif",
@@ -98,7 +114,8 @@
       "Needs the camera's login to read or change settings.",
       "Answers come back unicast, so a camera on the wrong subnet is not seen this way."
     ],
-    "enabledByDefault": true
+    "enabledByDefault": true,
+    "recovery": null
   },
   {
     "id": "ndi",
@@ -113,6 +130,7 @@
     "notes": [
       "Finds NDI cameras of any brand. Changing settings is left to the brand's own driver; an NDI source no driver recognises opens its web UI."
     ],
-    "enabledByDefault": true
+    "enabledByDefault": true,
+    "recovery": null
   }
 ]

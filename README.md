@@ -36,6 +36,29 @@ A camera fresh out of the box rarely sits on your subnet. Meerkat handles that t
 - **On every interface at once.** Each scan goes out of every network interface (or the ones you
   tick), each socket bound to that interface, so a show laptop with a camera network on one port
   and the venue LAN on another finds the cameras on both.
+- **Wrong subnet, HTTP only.** A camera that is heard on the wrong subnet but only talks HTTP
+  (BirdDog, ONVIF), or one whose web UI you want to open, gets a **Reach it from here** panel.
+  It gives the interface that heard the camera a temporary second address in the camera's
+  subnet, so the computer can talk to it directly: its web UI opens, and a driver that works
+  over HTTP can change its settings. Meerkat picks a free address near the top of the range,
+  which you can change, and refuses one that overlaps a subnet you are already on. The system
+  asks for an administrator password. Meerkat removes the address when it quits, and a restart
+  removes it too. The addresses in use are listed under **Temporary addresses** in the sidebar,
+  each with a Remove button.
+
+## Lost a BirdDog?
+
+A BirdDog P-series given an address nothing can reach can be put back with BirdDog's own
+**Neuralyzer**, which resets the camera's network settings. BirdDog has not published how
+Neuralyzer talks to the camera, so Meerkat cannot do the reset itself. Instead, **Lost a camera?**
+in the sidebar (or the link on a BirdDog that cannot be changed) explains the steps, links to
+BirdDog's download, and then **Watch for it** scans every few seconds for up to five minutes. It
+probes the factory fallback address, 192.168.100.100, too, and lists any BirdDog that turns up
+new or at a new address. A camera that comes back on its fallback address is usually on another
+subnet: select it and use **Reach it from here**.
+
+Any driver can name its brand's recovery tool the same way (`recovery` in `DriverInfo`, see
+[docs/drivers.md](docs/drivers.md)).
 
 ## Changing settings
 
@@ -107,11 +130,14 @@ trait. The engine, the UI and the CLI pick it up from `meerkat_drivers::all()`. 
 - **Panasonic:** cameras with authentication on need their admin login. UE160-generation cameras
   with authentication on use an encrypted variant that Meerkat does not speak. DHCP cannot be
   set over Easy IP.
-- **BirdDog P-series** has no network API: Meerkat finds it and opens its web UI.
+- **BirdDog P-series** has no network API: Meerkat finds it and opens its web UI. The Neuralyzer
+  hand-off and its watch are tested against the simulator only; Neuralyzer itself has not been
+  run alongside it.
 - **PTZOptics / VHD:** discovery only. The platform's set command is not verified.
-- A camera on the wrong subnet that only speaks HTTP (ONVIF, BirdDog) can be found but not
-  re-addressed until you can reach it. A helper that adds a temporary alias address to your
-  interface would fix that. It is not built yet.
+- **Temporary addresses** are tested against the simulator. The system commands that add and
+  remove them (`ifconfig … alias` through an administrator prompt on macOS, `ip addr` through
+  `pkexec` on Linux, `New-NetIPAddress` through an elevated PowerShell on Windows) are checked as
+  strings in the unit tests and have not yet been run on a real interface.
 
 ## Licence
 

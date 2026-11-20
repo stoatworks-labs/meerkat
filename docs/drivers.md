@@ -39,6 +39,7 @@ get a web UI link.
 | `default_login` | Pre-fills the login fields. |
 | `notes` | The limits a user needs to know before pressing Apply. Write them as plain sentences. |
 | `enabled_by_default` | Off for anything slow or noisy. |
+| `recovery` | The vendor's own tool for a camera nothing can reach, such as one given a bad address (BirdDog's Neuralyzer), or `None`. It holds the tool's name and download URL, the models it covers, what it does, the steps, what the camera does afterwards, and the `fallback` address it comes back on, which the watch probes as well. The UI links to the tool and then watches for the camera. |
 
 ### Discovery: `discover(ctx)`
 

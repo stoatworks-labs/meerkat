@@ -21,7 +21,7 @@ use std::net::Ipv4Addr;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use meerkat_core::driver::{DefaultLogin, Result};
+use meerkat_core::driver::{DefaultLogin, Recovery, Result};
 use meerkat_core::net::{mask_to_prefix, prefix_to_mask};
 use meerkat_core::{Caps, Camera, Driver, DriverError, DriverInfo, Mac, NetConfig, OpCtx, ScanCtx, WriteOutcome};
 use serde_json::{json, Value};
@@ -114,6 +114,19 @@ impl Driver for BirdDog {
                 "The camera reboots to apply a new address; Meerkat waits for it to come back.",
             ],
             enabled_by_default: true,
+            recovery: Some(Recovery {
+                tool: "BirdDog Neuralyzer",
+                url: "https://birddog.tv/neuralyzer",
+                models: "P-series",
+                does: "Resets a camera's network settings to the factory defaults, for a camera that no longer answers at the address it was given.",
+                steps: vec![
+                    "Download BirdDog Neuralyzer from BirdDog and run it on a computer on the same network switch as the camera. BirdDog says the camera needs current firmware for it to work.",
+                    "Use it to reset the camera's network settings.",
+                    "Come back here and press Watch for it: Meerkat scans until the camera turns up again.",
+                ],
+                after: "Out of the box a BirdDog uses DHCP, and falls back to 192.168.100.100/24 when no DHCP server answers.",
+                fallback: Some(std::net::Ipv4Addr::new(192, 168, 100, 100)),
+            }),
         }
     }
 

@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
 
+use crate::alias::{self, Alias, AliasBackend, NoAliases, SystemAliases};
 use crate::driver::{Driver, DriverInfo, Leg, Level, Msg, OpCtx, PortMap, ScanCtx, WriteOutcome};
 use crate::http::{Http, Route};
 use crate::model::{Camera, Credentials, Method, NetConfig, Reach};
@@ -103,6 +104,10 @@ pub struct Engine {
     chosen: Mutex<Vec<LocalIface>>,
     running: Mutex<Option<CancellationToken>>,
     sandbox: Option<Sandbox>,
+    /// Temporary addresses this engine added, to reach cameras on the wrong
+    /// subnet (see [`crate::alias`]). Removed by [`Engine::remove_aliases`].
+    aliases: Mutex<Vec<Alias>>,
+    alias_backend: Arc<dyn AliasBackend>,
 }
 
 impl Engine {
@@ -114,12 +119,16 @@ impl Engine {
             chosen: Mutex::new(Vec::new()),
             running: Mutex::new(None),
             sandbox: None,
+            aliases: Mutex::new(Vec::new()),
+            alias_backend: Arc::new(SystemAliases),
         }
     }
 
-    /// An engine that only ever talks to a simulator.
+    /// An engine that only ever talks to a simulator. Its temporary addresses
+    /// are pretend too: they join the sandbox's interface list and nothing
+    /// else.
     pub fn sandboxed(drivers: Vec<Arc<dyn Driver>>, sandbox: Sandbox) -> Self {
-        Engine { sandbox: Some(sandbox), ..Engine::new(drivers) }
+        Engine { sandbox: Some(sandbox), alias_backend: Arc::new(NoAliases), ..Engine::new(drivers) }
     }
 
     pub fn is_sandboxed(&self) -> bool {
@@ -155,11 +164,83 @@ impl Engine {
         self.drivers.iter().map(|d| d.info()).collect()
     }
 
+    /// This computer's addresses (the simulator's, in a sandbox), temporary
+    /// ones included.
     pub fn interfaces(&self) -> Result<Vec<LocalIface>, String> {
         match &self.sandbox {
-            Some(s) => Ok(s.ifaces.clone()),
+            Some(s) => {
+                let mut all = s.ifaces.clone();
+                all.extend(self.aliases.lock().unwrap().iter().map(Alias::as_iface));
+                Ok(all)
+            }
             None => net::interfaces().map_err(|e| format!("could not list network interfaces: {e}")),
         }
+    }
+
+    fn is_alias(&self, i: &LocalIface) -> bool {
+        self.aliases.lock().unwrap().iter().any(|a| a.is(i))
+    }
+
+    pub fn aliases(&self) -> Vec<Alias> {
+        self.aliases.lock().unwrap().clone()
+    }
+
+    /// The temporary address that would put this computer on `id`'s subnet.
+    pub fn plan_alias(&self, id: &str) -> Result<Alias, String> {
+        let cam = self.camera(id).ok_or("that camera is no longer in the list; scan again")?;
+        let all = self.interfaces()?;
+        let taken: Vec<Ipv4Addr> = self.cameras().iter().flat_map(|c| [Some(c.ip), c.net.as_ref().and_then(|n| n.gateway)]).flatten().collect();
+        alias::plan(&cam, &all, &taken)
+    }
+
+    /// Add a temporary address (the system asks for an admin password), then
+    /// work out every camera's reach again. Returns the cameras as they are
+    /// now; scan again to have the vendor drivers confirm what became
+    /// reachable.
+    pub async fn add_alias(&self, a: Alias) -> Result<Vec<Camera>, String> {
+        if self.is_running() {
+            return Err("stop the scan first".into());
+        }
+        let all = self.interfaces()?;
+        alias::check(&a, &all)?;
+        if let Some(c) = self.cameras().into_iter().find(|c| c.ip == a.ip) {
+            return Err(format!("{} is in use by {}", a.ip, c.name.or(c.model).unwrap_or(c.vendor)));
+        }
+        let a = Alias { index: all.iter().find(|i| i.name == a.iface).and_then(|i| i.index), ..a };
+        self.alias_backend.add(std::slice::from_ref(&a)).await?;
+        self.aliases.lock().unwrap().push(a);
+        self.refresh_reach()
+    }
+
+    /// Remove temporary addresses: the ones listed, or every one when `only`
+    /// is None (as the app quits). One admin prompt covers them all.
+    pub async fn remove_aliases(&self, only: Option<&[Alias]>) -> Result<Vec<Camera>, String> {
+        let list: Vec<Alias> = self.aliases().into_iter().filter(|a| only.is_none_or(|o| o.iter().any(|x| x.iface == a.iface && x.ip == a.ip))).collect();
+        if list.is_empty() {
+            return self.refresh_reach();
+        }
+        // One the system already dropped (the cable came out, say) would make
+        // the removal fail; it is gone either way.
+        let up = if self.sandbox.is_some() { None } else { net::interfaces().ok() };
+        let live: Vec<Alias> = list.iter().filter(|a| up.as_ref().is_none_or(|u| u.iter().any(|i| a.is(i)))).cloned().collect();
+        self.alias_backend.remove(&live).await?;
+        self.aliases.lock().unwrap().retain(|a| !list.contains(a));
+        self.refresh_reach()
+    }
+
+    /// Recompute every camera's reach and web UI address against the
+    /// interfaces as they are now.
+    pub fn refresh_reach(&self) -> Result<Vec<Camera>, String> {
+        let all = self.interfaces()?;
+        *self.ifaces.lock().unwrap() = all.clone();
+        let mut reg = self.registry.lock().unwrap();
+        for id in reg.all().into_iter().map(|c| c.id) {
+            if let Some(c) = reg.get_mut(&id) {
+                c.reach = reach(c, &all);
+                c.web_url = self.driver(&c.driver).and_then(|d| d.web_url(c));
+            }
+        }
+        Ok(reg.all())
     }
 
     pub fn cameras(&self) -> Vec<Camera> {
@@ -214,7 +295,14 @@ impl Engine {
         let started = Instant::now();
         let all = self.interfaces()?;
         let chosen: Vec<LocalIface> = if req.broadcast {
-            all.iter().filter(|i| if req.ifaces.is_empty() { i.usable() } else { req.ifaces.contains(&i.name) }).cloned().collect()
+            // A temporary address only exists to reach cameras by unicast: a
+            // second set of broadcasts out of the same wire would send every
+            // layer-2 write twice.
+            all.iter()
+                .filter(|i| !self.is_alias(i))
+                .filter(|i| if req.ifaces.is_empty() { i.usable() } else { req.ifaces.contains(&i.name) })
+                .cloned()
+                .collect()
         } else {
             Vec::new()
         };
@@ -487,7 +575,7 @@ impl Engine {
         if let Reach::Mismatch { iface } = &cam.reach {
             if !cam.caps.write_by_mac {
                 return Err(format!(
-                    "{} is outside {iface}'s subnet, and this driver changes settings over HTTP, which cannot reach it — put this computer on the camera's subnet first",
+                    "{} is outside {iface}'s subnet, and this driver changes settings over HTTP, which cannot reach it — add a temporary address on {iface} to reach it, or put this computer on the camera's subnet",
                     cam.ip
                 ));
             }
@@ -570,7 +658,10 @@ pub fn reach(cam: &Camera, all: &[LocalIface]) -> Reach {
     if let Some(i) = net::local_for(all, cam.ip) {
         return Reach::Local { iface: i.name.clone() };
     }
-    if cam.seen.iter().any(|s| s.method == Method::Unicast) {
+    // A probe from a swept range crossed a router. One sent to a camera an
+    // interface heard (the vendor confirming an NDI find) says nothing about
+    // routers: it carries that interface's name.
+    if cam.seen.iter().any(|s| s.method == Method::Unicast && !all.iter().any(|i| i.name == s.via)) {
         return Reach::Routed;
     }
     match cam.seen.iter().find(|s| s.via != "routed") {

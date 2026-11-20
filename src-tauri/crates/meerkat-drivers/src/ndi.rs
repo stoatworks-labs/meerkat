@@ -68,6 +68,7 @@ impl Driver for Ndi {
             default_login: None,
             notes: vec!["Finds NDI cameras of any brand. Changing settings is left to the brand's own driver; an NDI source no driver recognises opens its web UI."],
             enabled_by_default: true,
+            recovery: None,
         }
     }
 

@@ -4,6 +4,7 @@ import { BulkDialog } from './components/BulkDialog';
 import { CameraTable, useVisibleCameras } from './components/CameraTable';
 import { Detail } from './components/Detail';
 import { LogPanel } from './components/LogPanel';
+import { RecoveryDialog } from './components/RecoveryDialog';
 import { Sidebar } from './components/Sidebar';
 import { Spinner } from './components/ui';
 import { inTauri } from './lib/ipc';
@@ -104,6 +105,7 @@ export function App() {
         <Detail />
       </div>
       <BulkDialog open={bulk} onClose={() => setBulk(false)} />
+      <RecoveryDialog />
     </div>
   );
 }

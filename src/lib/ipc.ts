@@ -2,7 +2,7 @@
 // in a browser — a mock built from the simulator's real output stands in, so
 // the UI can be worked on without the desktop shell.
 
-import type { AppInfo, Camera, Credentials, DriverInfo, EngineEvent, LocalIface, NetConfig, ScanRequest, ScanSummary, WriteOutcome } from '../types';
+import type { Alias, AppInfo, Camera, Credentials, DriverInfo, EngineEvent, LocalIface, NetConfig, ScanRequest, ScanSummary, WriteOutcome } from '../types';
 
 export const inTauri = '__TAURI_INTERNALS__' in window;
 
@@ -20,6 +20,10 @@ export interface Backend {
   writeNetwork(id: string, cfg: NetConfig, creds: Credentials | null): Promise<WriteOutcome>;
   verify(id: string, outcome: WriteOutcome, timeoutSecs?: number): Promise<Camera | null>;
   openWebUi(id: string): Promise<string>;
+  aliases(): Promise<Alias[]>;
+  planAlias(id: string): Promise<Alias>;
+  addAlias(alias: Alias): Promise<Camera[]>;
+  removeAliases(only: Alias[] | null): Promise<Camera[]>;
   onEvent(cb: (e: EngineEvent) => void): Promise<() => void>;
 }
 
@@ -40,6 +44,10 @@ async function tauriBackend(): Promise<Backend> {
     writeNetwork: (id, cfg, creds) => invoke('write_network', { id, cfg, creds }),
     verify: (id, outcome, timeoutSecs) => invoke('verify', { id, outcome, timeoutSecs }),
     openWebUi: (id) => invoke('open_web_ui', { id }),
+    aliases: () => invoke('aliases'),
+    planAlias: (id) => invoke('plan_alias', { id }),
+    addAlias: (alias) => invoke('add_alias', { alias }),
+    removeAliases: (only) => invoke('remove_aliases', { only }),
     onEvent: async (cb) => listen<EngineEvent>('meerkat://event', (e) => cb(e.payload)),
   };
 }

@@ -79,6 +79,32 @@ pub struct DriverInfo {
     pub default_login: Option<DefaultLogin>,
     pub notes: Vec<&'static str>,
     pub enabled_by_default: bool,
+    /// The vendor's own tool for a camera nothing else can reach, if there is
+    /// one.
+    pub recovery: Option<Recovery>,
+}
+
+/// A vendor's tool for getting a camera back when nothing can reach it — a
+/// network reset to factory settings, say (BirdDog Neuralyzer). Meerkat cannot
+/// do what such a tool does when its protocol is not published, so it points
+/// at the tool, then watches for the camera to come back.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Recovery {
+    /// The tool's name, as the vendor calls it.
+    pub tool: &'static str,
+    /// The vendor's own download page.
+    pub url: &'static str,
+    /// Which of the vendor's cameras it is for.
+    pub models: &'static str,
+    /// What it does, in one sentence.
+    pub does: &'static str,
+    pub steps: Vec<&'static str>,
+    /// The camera's network settings afterwards.
+    pub after: &'static str,
+    /// Where the camera answers when no DHCP server gives it an address:
+    /// probed while watching for it.
+    pub fallback: Option<Ipv4Addr>,
 }
 
 /// One way out for a discovery broadcast: a socket bound to `bind` (and

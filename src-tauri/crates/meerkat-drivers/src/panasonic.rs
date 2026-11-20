@@ -393,6 +393,7 @@ impl Driver for Panasonic {
                 "Switching a camera to DHCP is not possible over Easy IP; set it in the web UI.",
             ],
             enabled_by_default: true,
+            recovery: None,
         }
     }
 

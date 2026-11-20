@@ -539,6 +539,105 @@ p.errs {
   color: var(--ok);
 }
 
+/* ── Temporary addresses ─────────────────────────────────────────────────── */
+
+.reach-it {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--sw-radius-sm);
+}
+.reach-it h3 {
+  font-size: 0.95rem;
+}
+.reach-it p {
+  margin: 0;
+}
+.reach-it label.addr {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.reach-it label.addr input {
+  width: 19ch;
+}
+.reach-it .row {
+  align-items: flex-end;
+}
+ul.aliases {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+ul.aliases li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 6px;
+  align-items: baseline;
+}
+ul.tools li + li {
+  margin-top: 4px;
+}
+
+/* A link that looks like the theme's buttons (the theme styles <button> only). */
+a.sw-btn {
+  font: inherit;
+  font-size: 0.9rem;
+  border: 1px solid var(--sw-line);
+  background: var(--sw-card);
+  color: var(--sw-ink);
+  border-radius: var(--sw-radius-sm);
+  padding: 6px 12px;
+}
+a.sw-btn:hover {
+  border-color: var(--sw-accent);
+}
+
+/* ── Recovery dialog ─────────────────────────────────────────────────────── */
+
+dialog.recovery {
+  width: min(560px, calc(100vw - 32px));
+  padding: 18px 20px;
+}
+dialog.recovery h2 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+dialog.recovery p {
+  margin: 0 0 10px;
+}
+dialog.recovery ol.steps {
+  margin: 0 0 10px;
+  padding-left: 1.3em;
+  display: grid;
+  gap: 4px;
+}
+dialog.recovery .row {
+  margin: 12px 0 0;
+}
+dialog.recovery .watch {
+  margin-top: 12px;
+}
+ul.found {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+ul.found li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
 /* ── Bulk dialog ─────────────────────────────────────────────────────────── */
 
 dialog.bulk {

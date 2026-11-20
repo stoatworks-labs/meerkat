@@ -13,9 +13,9 @@
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use meerkat_core::{Camera, Credentials, DriverInfo, Engine, Event, LocalIface, NetConfig, ScanRequest, ScanSummary, WriteOutcome};
+use meerkat_core::{Alias, Camera, Credentials, DriverInfo, Engine, Event, LocalIface, NetConfig, ScanRequest, ScanSummary, WriteOutcome};
 use serde::Serialize;
-use tauri::{AppHandle, Builder, Emitter, Runtime, State};
+use tauri::{AppHandle, Builder, Emitter, Manager, RunEvent, Runtime, State};
 use tauri_plugin_opener::OpenerExt;
 
 const EVENT: &str = "meerkat://event";
@@ -59,6 +59,10 @@ async fn set_demo(state: State<'_, AppState>, on: bool) -> Result<AppInfo, Strin
     }
     if on == state.engine().is_sandboxed() {
         return Ok(info(&state));
+    }
+    // The real engine is the only record of the addresses it added.
+    if on && !state.engine().aliases().is_empty() {
+        return Err("remove the temporary addresses first".into());
     }
     if on {
         let sim = meerkat_sim::Sim::start(meerkat_sim::demo_cameras()).await.map_err(|e| format!("could not start the simulator: {e}"))?;
@@ -154,6 +158,31 @@ fn open_web_ui<R: Runtime>(app: AppHandle<R>, state: State<AppState>, id: String
     Ok(url)
 }
 
+/// The temporary addresses Meerkat has added (see `meerkat_core::alias`).
+#[tauri::command]
+fn aliases(state: State<AppState>) -> Vec<Alias> {
+    state.engine().aliases()
+}
+
+/// The temporary address that would put this computer on a camera's subnet.
+#[tauri::command]
+fn plan_alias(state: State<AppState>, id: String) -> Result<Alias, String> {
+    state.engine().plan_alias(&id)
+}
+
+/// Add one. The system asks for an admin password; the cameras come back with
+/// their reach worked out again.
+#[tauri::command]
+async fn add_alias(state: State<'_, AppState>, alias: Alias) -> Result<Vec<Camera>, String> {
+    state.engine().add_alias(alias).await
+}
+
+/// Remove the ones listed, or every one.
+#[tauri::command]
+async fn remove_aliases(state: State<'_, AppState>, only: Option<Vec<Alias>>) -> Result<Vec<Camera>, String> {
+    state.engine().remove_aliases(only.as_deref()).await
+}
+
 /// A sweep of a /22 holds a socket per probe in flight per driver; macOS
 /// starts every app at 256 descriptors.
 #[cfg(unix)]
@@ -188,17 +217,44 @@ pub fn run() {
         (Engine::new(meerkat_drivers::all()), None)
     };
     app(tauri::Builder::default(), AppState { engine: Mutex::new(Arc::new(engine)), sim: Mutex::new(sim) })
-        .run(tauri::generate_context!())
-        .expect("error while running Meerkat");
+        .build(tauri::generate_context!())
+        .expect("error while starting Meerkat")
+        .run(|app, event| {
+            // Temporary addresses go when Meerkat does (the system asks for
+            // the password once more). A restart would drop them anyway.
+            if let RunEvent::Exit = event {
+                let engine = app.state::<AppState>().engine();
+                if !engine.aliases().is_empty() {
+                    if let Err(e) = tauri::async_runtime::block_on(engine.remove_aliases(None)) {
+                        eprintln!("meerkat: could not remove the temporary addresses ({e}); a restart removes them");
+                    }
+                }
+            }
+        });
 }
 
 /// Everything but the runtime and the context, so the tests can drive the
 /// same commands on Tauri's mock runtime.
 fn app<R: Runtime>(builder: Builder<R>, state: AppState) -> Builder<R> {
-    builder
-        .plugin(tauri_plugin_opener::init())
-        .manage(state)
-        .invoke_handler(tauri::generate_handler![app_info, set_demo, interfaces, drivers, cameras, scan, stop_scan, forget, clear, read_network, write_network, verify, open_web_ui])
+    builder.plugin(tauri_plugin_opener::init()).manage(state).invoke_handler(tauri::generate_handler![
+        app_info,
+        set_demo,
+        interfaces,
+        drivers,
+        cameras,
+        scan,
+        stop_scan,
+        forget,
+        clear,
+        read_network,
+        write_network,
+        verify,
+        open_web_ui,
+        aliases,
+        plan_alias,
+        add_alias,
+        remove_aliases
+    ])
 }
 
 /// The command layer the webview talks to, driven the way `src/lib/ipc.ts`
@@ -273,6 +329,22 @@ mod tests {
         let cfg = json!({ "dhcp": false, "ip": "192.168.10.22", "prefix": 24, "gateway": "192.168.10.1" });
         let e = call(&w, "write_network", json!({ "id": locked["id"], "cfg": cfg, "creds": null })).unwrap_err();
         assert!(e.as_str().is_some_and(|s| s.contains("20 minutes")), "{e}");
+
+        // The BirdDog on its fallback address: plan, add and remove a
+        // temporary address the way the detail panel does.
+        let q = cams.iter().find(|c| c["ip"] == "192.168.100.100").expect("P400");
+        assert_eq!(q["reach"]["kind"], "mismatch");
+        let alias = call(&w, "plan_alias", json!({ "id": q["id"] })).expect("plan");
+        assert_eq!((&alias["iface"], &alias["ip"], &alias["prefix"]), (&json!("sim0"), &json!("192.168.100.253"), &json!(24)), "{alias}");
+        let now = call(&w, "add_alias", json!({ "alias": alias })).expect("add");
+        let q2 = now.as_array().unwrap().iter().find(|c| c["id"] == q["id"]).unwrap();
+        assert_eq!(q2["reach"]["kind"], "local", "{q2}");
+        assert_eq!(call(&w, "aliases", json!({})).unwrap().as_array().unwrap().len(), 1);
+        let e = call(&w, "set_demo", json!({ "on": true })).unwrap();
+        assert_eq!(e["demo"], true, "already in demo mode: nothing to switch");
+        let now = call(&w, "remove_aliases", json!({ "only": [alias] })).expect("remove");
+        assert_eq!(now.as_array().unwrap().iter().find(|c| c["id"] == q["id"]).unwrap()["reach"]["kind"], "mismatch");
+        assert_eq!(call(&w, "aliases", json!({})).unwrap(), json!([]));
 
         // The table can be cleared once the scan is over.
         call(&w, "clear", json!({})).unwrap();

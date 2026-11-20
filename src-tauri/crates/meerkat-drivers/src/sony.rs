@@ -157,6 +157,7 @@ impl Driver for Sony {
                 "Layer 2 only: it re-addresses a camera on the wrong subnet, but cannot cross a router.",
             ],
             enabled_by_default: true,
+            recovery: None,
         }
     }
 

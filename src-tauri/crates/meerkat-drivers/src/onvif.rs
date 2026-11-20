@@ -278,6 +278,7 @@ impl Driver for Onvif {
                 "Answers come back unicast, so a camera on the wrong subnet is not seen this way.",
             ],
             enabled_by_default: true,
+            recovery: None,
         }
     }
 

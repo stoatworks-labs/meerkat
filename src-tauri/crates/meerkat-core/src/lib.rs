@@ -14,7 +14,10 @@
 //!   and ONVIF and NDI, say) into one row.
 //! - [`engine`] — runs a scan: every driver's broadcast discovery on every
 //!   chosen interface, plus a unicast sweep of routed ranges, at once.
+//! - [`alias`] — temporary addresses, so HTTP reaches a camera heard on the
+//!   wrong subnet.
 
+pub mod alias;
 pub mod driver;
 pub mod engine;
 pub mod http;
@@ -22,7 +25,8 @@ pub mod model;
 pub mod net;
 pub mod registry;
 
-pub use driver::{Driver, DriverError, DriverInfo, OpCtx, ScanCtx, WriteOutcome};
+pub use alias::Alias;
+pub use driver::{Driver, DriverError, DriverInfo, OpCtx, Recovery, ScanCtx, WriteOutcome};
 pub use engine::{Engine, Event, Sandbox, ScanRequest, ScanSummary};
 pub use model::{Caps, Camera, Credentials, Mac, Method, NetConfig, Reach, Sighting};
 pub use net::LocalIface;

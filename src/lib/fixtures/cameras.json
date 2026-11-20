@@ -44,7 +44,7 @@
       "kind": "mismatch",
       "iface": "sim0"
     },
-    "lastSeen": 1795173702133
+    "lastSeen": 1795180946503
   },
   {
     "id": "mac:08:00:46:aa:10:01",
@@ -92,7 +92,7 @@
       "kind": "mismatch",
       "iface": "sim0"
     },
-    "lastSeen": 1795173702133
+    "lastSeen": 1795180946503
   },
   {
     "id": "mac:00:80:45:1a:2b:02",
@@ -139,7 +139,7 @@
       "kind": "local",
       "iface": "sim0"
     },
-    "lastSeen": 1795173702133
+    "lastSeen": 1795180946503
   },
   {
     "id": "ip:192.168.10.30",
@@ -180,7 +180,7 @@
       "kind": "local",
       "iface": "sim0"
     },
-    "lastSeen": 1795173701981
+    "lastSeen": 1795180946352
   },
   {
     "id": "mac:08:00:46:aa:10:02",
@@ -229,7 +229,7 @@
       "kind": "local",
       "iface": "sim0"
     },
-    "lastSeen": 1795173702133
+    "lastSeen": 1795180946503
   },
   {
     "id": "mac:80:27:b6:26:08:f9",
@@ -288,7 +288,7 @@
       "kind": "local",
       "iface": "sim0"
     },
-    "lastSeen": 1795173702938
+    "lastSeen": 1795180949010
   },
   {
     "id": "mac:dc:ed:84:00:11:22",
@@ -337,7 +337,7 @@
       "kind": "mismatch",
       "iface": "sim0"
     },
-    "lastSeen": 1795173701828
+    "lastSeen": 1795180946201
   },
   {
     "id": "ip:192.168.100.100",
@@ -378,6 +378,6 @@
       "kind": "mismatch",
       "iface": "sim0"
     },
-    "lastSeen": 1795173701828
+    "lastSeen": 1795180946201
   }
 ]

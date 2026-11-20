@@ -98,6 +98,7 @@ impl Driver for Vhd {
                 "Seen on PTZOptics and other cameras built on the ValueHD platform.",
             ],
             enabled_by_default: true,
+            recovery: None,
         }
     }
 
