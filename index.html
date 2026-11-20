@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Meerkat</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!--
+      About dialog. about.js is vendored byte-for-byte from
+      stoatworks-backend/about; about-data.js is hand-written until Meerkat is
+      in the website's projects.json, after which sync-about.py generates it.
+    -->
+    <script src="/about-data.js" defer></script>
+    <script src="/about.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+[package]
+name = "meerkat"
+version = "0.1.0"
+description = "Find PTZ cameras on the network — across subnets — change their IP settings and open their web UI: BirdDog, Panasonic, Sony, ONVIF and NDI"
+authors = ["Allan Sargeant"]
+edition = "2021"
+license = "MIT"
+
+[lib]
+# The `_lib` suffix looks redundant and is not: on Windows the lib and bin names
+# must differ. https://github.com/rust-lang/cargo/issues/8519
+name = "meerkat_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[workspace]
+members = ["crates/meerkat-core", "crates/meerkat-drivers", "crates/meerkat-sim", "crates/meerkat-cli"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+meerkat-core = { path = "crates/meerkat-core" }
+meerkat-drivers = { path = "crates/meerkat-drivers" }
+meerkat-sim = { path = "crates/meerkat-sim" }
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "sync", "time"] }
+
+[dev-dependencies]
+# The mock runtime, for driving the commands in tests without a window.
+tauri = { version = "2", features = ["test"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[profile.release]
+opt-level = 3
+lto = true

@@ -1,0 +1,383 @@
+[
+  {
+    "id": "mac:00:80:45:1a:2b:01",
+    "driver": "panasonic",
+    "vendor": "Panasonic",
+    "model": "AW-UE150",
+    "name": "CAM 1 WIDE",
+    "mac": "00:80:45:1a:2b:01",
+    "ip": "192.168.0.10",
+    "net": {
+      "dhcp": false,
+      "ip": "192.168.0.10",
+      "prefix": 24,
+      "gateway": "192.168.0.1",
+      "dns": [],
+      "hostname": null
+    },
+    "firmware": null,
+    "serial": null,
+    "webPort": 80,
+    "webUrl": "http://192.168.0.10/",
+    "caps": {
+      "readNetwork": true,
+      "writeNetwork": true,
+      "writeByMac": true,
+      "needsAuth": false,
+      "dhcp": false,
+      "dns": true,
+      "hostname": false,
+      "reboot": false
+    },
+    "fields": {
+      "easyIpMode": "0x02",
+      "networkVersion": "1.00"
+    },
+    "seen": [
+      {
+        "driver": "panasonic",
+        "method": "broadcast",
+        "via": "sim0"
+      }
+    ],
+    "reach": {
+      "kind": "mismatch",
+      "iface": "sim0"
+    },
+    "lastSeen": 1795173702133
+  },
+  {
+    "id": "mac:08:00:46:aa:10:01",
+    "driver": "sony",
+    "vendor": "Sony",
+    "model": null,
+    "name": "STAGE L",
+    "mac": "08:00:46:aa:10:01",
+    "ip": "192.168.0.100",
+    "net": {
+      "dhcp": false,
+      "ip": "192.168.0.100",
+      "prefix": 24,
+      "gateway": "192.168.0.1",
+      "dns": [],
+      "hostname": "STAGE L"
+    },
+    "firmware": "2.10.00",
+    "serial": null,
+    "webPort": 80,
+    "webUrl": "http://192.168.0.100/",
+    "caps": {
+      "readNetwork": true,
+      "writeNetwork": true,
+      "writeByMac": true,
+      "needsAuth": false,
+      "dhcp": false,
+      "dns": false,
+      "hostname": true,
+      "reboot": false
+    },
+    "fields": {
+      "info": "network",
+      "networkBoard": "IPCARD",
+      "write": "on"
+    },
+    "seen": [
+      {
+        "driver": "sony",
+        "method": "broadcast",
+        "via": "sim0"
+      }
+    ],
+    "reach": {
+      "kind": "mismatch",
+      "iface": "sim0"
+    },
+    "lastSeen": 1795173702133
+  },
+  {
+    "id": "mac:00:80:45:1a:2b:02",
+    "driver": "panasonic",
+    "vendor": "Panasonic",
+    "model": "AW-UE100",
+    "name": "CAM 2 TIGHT",
+    "mac": "00:80:45:1a:2b:02",
+    "ip": "192.168.10.12",
+    "net": {
+      "dhcp": false,
+      "ip": "192.168.10.12",
+      "prefix": 24,
+      "gateway": "192.168.10.1",
+      "dns": [],
+      "hostname": null
+    },
+    "firmware": null,
+    "serial": null,
+    "webPort": 80,
+    "webUrl": "http://192.168.10.12/",
+    "caps": {
+      "readNetwork": true,
+      "writeNetwork": true,
+      "writeByMac": true,
+      "needsAuth": false,
+      "dhcp": false,
+      "dns": true,
+      "hostname": false,
+      "reboot": false
+    },
+    "fields": {
+      "easyIpMode": "0x02",
+      "networkVersion": "4.10"
+    },
+    "seen": [
+      {
+        "driver": "panasonic",
+        "method": "broadcast",
+        "via": "sim0"
+      }
+    ],
+    "reach": {
+      "kind": "local",
+      "iface": "sim0"
+    },
+    "lastSeen": 1795173702133
+  },
+  {
+    "id": "ip:192.168.10.30",
+    "driver": "onvif",
+    "vendor": "AVer",
+    "model": "PTZ330UV",
+    "name": "AVer Lectern",
+    "mac": null,
+    "ip": "192.168.10.30",
+    "net": null,
+    "firmware": null,
+    "serial": null,
+    "webPort": 80,
+    "webUrl": "http://192.168.10.30/",
+    "caps": {
+      "readNetwork": true,
+      "writeNetwork": true,
+      "writeByMac": false,
+      "needsAuth": true,
+      "dhcp": true,
+      "dns": true,
+      "hostname": true,
+      "reboot": true
+    },
+    "fields": {
+      "onvifProfiles": "Streaming",
+      "onvifType": "PTZ",
+      "onvifXaddr": "http://192.168.10.30/onvif/device_service"
+    },
+    "seen": [
+      {
+        "driver": "onvif",
+        "method": "multicast",
+        "via": "sim0"
+      }
+    ],
+    "reach": {
+      "kind": "local",
+      "iface": "sim0"
+    },
+    "lastSeen": 1795173701981
+  },
+  {
+    "id": "mac:08:00:46:aa:10:02",
+    "driver": "sony",
+    "vendor": "Sony",
+    "model": null,
+    "name": "FOH",
+    "mac": "08:00:46:aa:10:02",
+    "ip": "192.168.10.31",
+    "net": {
+      "dhcp": false,
+      "ip": "192.168.10.31",
+      "prefix": 24,
+      "gateway": "192.168.10.1",
+      "dns": [],
+      "hostname": "FOH"
+    },
+    "firmware": "1.00",
+    "serial": null,
+    "webPort": 80,
+    "webUrl": "http://192.168.10.31/",
+    "caps": {
+      "readNetwork": true,
+      "writeNetwork": false,
+      "writeByMac": true,
+      "needsAuth": false,
+      "dhcp": false,
+      "dns": false,
+      "hostname": true,
+      "reboot": false
+    },
+    "fields": {
+      "info": "network",
+      "networkBoard": "IPCARD",
+      "write": "off",
+      "writeNote": "IP setup is locked (WRITE:off). It unlocks for 20 minutes after power-on, unless disabled on the camera"
+    },
+    "seen": [
+      {
+        "driver": "sony",
+        "method": "broadcast",
+        "via": "sim0"
+      }
+    ],
+    "reach": {
+      "kind": "local",
+      "iface": "sim0"
+    },
+    "lastSeen": 1795173702133
+  },
+  {
+    "id": "mac:80:27:b6:26:08:f9",
+    "driver": "birddog",
+    "vendor": "BirdDog",
+    "model": "X1 Ultra",
+    "name": "birddog-608f9",
+    "mac": "80:27:b6:26:08:f9",
+    "ip": "192.168.10.40",
+    "net": {
+      "dhcp": true,
+      "ip": "192.168.10.40",
+      "prefix": 24,
+      "gateway": "192.168.10.1",
+      "dns": [],
+      "hostname": "birddog-608f9"
+    },
+    "firmware": "6.1.059",
+    "serial": "8027b62608f9",
+    "webPort": 80,
+    "webUrl": "http://192.168.10.40/",
+    "caps": {
+      "readNetwork": true,
+      "writeNetwork": true,
+      "writeByMac": false,
+      "needsAuth": false,
+      "dhcp": true,
+      "dns": true,
+      "hostname": false,
+      "reboot": true
+    },
+    "fields": {
+      "api": "2.1 (network settings over the API)",
+      "fallbackIp": "192.168.100.100",
+      "firmwareFull": "BirdDog X1 Ultra 6.1.059",
+      "hostname": "birddog-608f9",
+      "mcuVersion": "5",
+      "mdnsHost": "birddog-608f9.local",
+      "ndiName": "CAM",
+      "ndiPort": "5961",
+      "status": "Active"
+    },
+    "seen": [
+      {
+        "driver": "ndi",
+        "method": "mdns",
+        "via": "sim0"
+      },
+      {
+        "driver": "birddog",
+        "method": "unicast",
+        "via": "sim0"
+      }
+    ],
+    "reach": {
+      "kind": "local",
+      "iface": "sim0"
+    },
+    "lastSeen": 1795173702938
+  },
+  {
+    "id": "mac:dc:ed:84:00:11:22",
+    "driver": "vhd",
+    "vendor": "PTZOptics / VHD",
+    "model": "PT20X-SDI-G3",
+    "name": null,
+    "mac": "dc:ed:84:00:11:22",
+    "ip": "192.168.100.88",
+    "net": {
+      "dhcp": false,
+      "ip": "192.168.100.88",
+      "prefix": 24,
+      "gateway": "192.168.100.1",
+      "dns": [
+        "192.168.100.1"
+      ],
+      "hostname": null
+    },
+    "firmware": "SOC v6.3.32",
+    "serial": null,
+    "webPort": 80,
+    "webUrl": "http://192.168.100.88/",
+    "caps": {
+      "readNetwork": true,
+      "writeNetwork": false,
+      "writeByMac": false,
+      "needsAuth": false,
+      "dhcp": false,
+      "dns": false,
+      "hostname": false,
+      "reboot": false
+    },
+    "fields": {
+      "deviceId": "simDCED84001122",
+      "uptime": "1234"
+    },
+    "seen": [
+      {
+        "driver": "vhd",
+        "method": "multicast",
+        "via": "sim0"
+      }
+    ],
+    "reach": {
+      "kind": "mismatch",
+      "iface": "sim0"
+    },
+    "lastSeen": 1795173701828
+  },
+  {
+    "id": "ip:192.168.100.100",
+    "driver": "ndi",
+    "vendor": "BirdDog",
+    "model": null,
+    "name": "BIRDDOG-31002 (CAM)",
+    "mac": null,
+    "ip": "192.168.100.100",
+    "net": null,
+    "firmware": null,
+    "serial": null,
+    "webPort": 80,
+    "webUrl": "http://192.168.100.100/",
+    "caps": {
+      "readNetwork": false,
+      "writeNetwork": false,
+      "writeByMac": false,
+      "needsAuth": false,
+      "dhcp": false,
+      "dns": false,
+      "hostname": false,
+      "reboot": false
+    },
+    "fields": {
+      "mdnsHost": "birddog-31002.local",
+      "ndiName": "BIRDDOG-31002 (CAM)",
+      "ndiPort": "5961"
+    },
+    "seen": [
+      {
+        "driver": "ndi",
+        "method": "mdns",
+        "via": "sim0"
+      }
+    ],
+    "reach": {
+      "kind": "mismatch",
+      "iface": "sim0"
+    },
+    "lastSeen": 1795173701828
+  }
+]

@@ -1,0 +1,23 @@
+[package]
+name = "meerkat-core"
+version = "0.1.0"
+description = "Meerkat's engine: the camera model, the driver trait, local interfaces, scanning across subnets and merging what the drivers find"
+authors = ["Allan Sargeant"]
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+async-trait = "0.1"
+futures = "0.3"
+getrandom = "0.4"
+hex = "0.4"
+if-addrs = "0.15"
+libc = "0.2"
+md-5 = "0.11"
+reqwest = { version = "0.13", default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+socket2 = { version = "0.6", features = ["all"] }
+thiserror = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "sync", "macros"] }
+tokio-util = "0.7"

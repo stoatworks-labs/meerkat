@@ -1,0 +1,118 @@
+# Meerkat
+
+> **AI-assisted project.** This codebase was created with [Claude](https://claude.com/claude-code)
+> (Anthropic), directed and reviewed by a human author. **Nothing here has been tested against a
+> real camera yet.** Every protocol is exercised end to end against a built-in simulator that
+> answers the way each vendor's documentation says the cameras do, and discovery has been run
+> (read-only) on a real network. See [Status](#status) before you change the address of a
+> camera you care about.
+
+**Find every PTZ camera on the network, give it the right address, open its web page.**
+Meerkat speaks each brand's own discovery protocol, so it finds cameras that are on the wrong
+subnet as well as the right one. It can re-address them where the brand allows it, and it opens
+each camera's built-in web UI with one click.
+
+| Brand | Finds it with | Can change its address | Notes |
+| --- | --- | --- | --- |
+| **Panasonic** (AW-UE, AW-HE) | Easy IP Setup broadcast (UDP 10670 → 10669) | Yes, by MAC, even on the wrong subnet | Only in the first 20 minutes after power-on, unless the camera allows unlimited time. No DHCP. |
+| **Sony** (SRG, BRC, ILME-FR7) | Sony IP Setup broadcast (UDP 52380) | Yes, by MAC, even on the wrong subnet | Unless the camera has locked IP setup (BRC-AM7 and FR7 lock 20 minutes after power-on). No DHCP. |
+| **BirdDog** | NDI (mDNS), confirmed over the REST API on :8080 | X-series and MAX (firmware 6.x): yes, then the camera reboots | P-series and converters (5.5.x): web UI only. |
+| **PTZOptics / ValueHD** | VHD upgrade-tool multicast (239.255.255.251:8005) | Not yet: use the web UI, or ONVIF | |
+| **Any ONVIF camera** (AVer, Lumens, Marshall, Avonic…) | WS-Discovery (239.255.255.250:3702) | Yes, with the camera's login | Answers are unicast, so a camera on the wrong subnet is not seen this way. |
+| **Any NDI camera** | mDNS `_ndi._tcp` | No: the brand's own driver does that | Unknown NDI sources still get a web UI link. |
+
+## Across subnets
+
+A camera fresh out of the box rarely sits on your subnet. Meerkat handles that three ways:
+
+- **Wrong subnet, same wire.** Panasonic, Sony and NDI discovery all work at layer 2, so a camera
+  at 192.168.0.10 answers a laptop at 10.0.0.5. Meerkat marks it **Mismatch** and, for
+  Panasonic and Sony, can move it onto your subnet by MAC without you touching the laptop's own
+  address.
+- **Behind a router.** Add a range under **Routed subnets** in the sidebar (`10.20.0.0/24`, `10.20.0.10-60`).
+  Meerkat sends each brand's discovery to that subnet's directed broadcast, then sweeps it by
+  unicast: an HTTP probe for Panasonic and BirdDog, a UDP inquiry for Sony, a WS-Discovery
+  probe for ONVIF. Cameras found that way show as **Routed**.
+- **On every interface at once.** Each scan goes out of every network interface (or the ones you
+  tick), each socket bound to that interface, so a show laptop with a camera network on one port
+  and the venue LAN on another finds the cameras on both.
+
+## Changing settings
+
+Pick a camera, change the address, subnet, gateway, DNS or name, and press **Apply**. Meerkat
+checks the new settings before anything is sent: is the address already taken by a camera it
+can see, is the gateway inside the subnet, does this brand support DHCP. It sends the change and
+then looks for the camera at its new address, keeping its row because it is keyed by MAC.
+**Pick a free address** suggests the next unused one on the subnet of the interface that heard
+the camera.
+
+Several cameras at once: tick them, press **Address in sequence…**, give a starting address, and
+Meerkat gives them consecutive addresses in the order shown, one at a time, checking each.
+
+## Opening the web UI
+
+**Open web UI** opens the camera's own page in your browser, on the port that brand uses.
+
+## Demo mode
+
+Tick **Demo cameras** (or start with `MEERKAT_DEMO=1`, or `--demo`) to run against eight
+simulated cameras: two Panasonic, two Sony, two BirdDog, one ONVIF and one VHD. They sit on a
+pretend interface, some on the wrong subnet, one locked, one outside its 20-minute window. Every
+protocol is answered on loopback, and **nothing is sent to the network** in demo mode: the
+engine's sockets are bound to 127.0.0.1 and every destination is rewritten to the simulator or
+to a closed port.
+
+## Command line
+
+The same engine without the window:
+
+```bash
+cd src-tauri
+cargo run -p meerkat-cli -- scan                       # every interface, every brand
+cargo run -p meerkat-cli -- scan --range 10.20.0.0/24  # plus a routed subnet
+cargo run -p meerkat-cli -- set <camera> --ip 192.168.10.21 --prefix 24 --gw 192.168.10.1        # dry run
+cargo run -p meerkat-cli -- set <camera> --ip 192.168.10.21 --prefix 24 --gw 192.168.10.1 --yes  # do it
+cargo run -p meerkat-cli -- web <camera>
+cargo run -p meerkat-cli -- scan --demo --json         # against the simulator
+```
+
+`<camera>` is a MAC, an IP or a row id from the scan. `set` prints the current and new settings
+and does nothing without `--yes`.
+
+## Building
+
+```bash
+npm install
+npm run app          # Vite on :5175 + cargo, opens the window
+npm run app:demo     # the same, against the simulator
+npm run app:build    # a release bundle for this platform
+npm test             # vitest: the address helpers
+cd src-tauri && cargo test --workspace   # drivers, engine, simulator end to end, command layer
+```
+
+It is a desktop app and not a web page because discovery needs raw UDP broadcast, multicast and
+sockets bound to each interface, which a browser cannot do.
+
+## Adding a brand
+
+Every brand is one file in `src-tauri/crates/meerkat-drivers/src/` implementing the `Driver`
+trait. The engine, the UI and the CLI pick it up from `meerkat_drivers::all()`. See
+[docs/drivers.md](docs/drivers.md).
+
+## Status
+
+- **Never run against real cameras.** Every driver is written from the vendor's public
+  documentation and tested against the simulator. The first real Panasonic, Sony and BirdDog
+  on the bench are the next test, each one read first and then re-addressed.
+- **Panasonic:** cameras with authentication on need their admin login. UE160-generation cameras
+  with authentication on use an encrypted variant that Meerkat does not speak. DHCP cannot be
+  set over Easy IP.
+- **BirdDog P-series** has no network API: Meerkat finds it and opens its web UI.
+- **PTZOptics / VHD:** discovery only. The platform's set command is not verified.
+- A camera on the wrong subnet that only speaks HTTP (ONVIF, BirdDog) can be found but not
+  re-addressed until you can reach it. A helper that adds a temporary alias address to your
+  interface would fix that. It is not built yet.
+
+## Licence
+
+MIT. See [LICENSE](LICENSE).

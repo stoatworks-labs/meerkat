@@ -1,0 +1,20 @@
+[package]
+name = "meerkat-drivers"
+version = "0.1.0"
+description = "Meerkat's vendor drivers: Panasonic Easy IP, Sony IP Setup, BirdDog REST, ONVIF and NDI mDNS"
+authors = ["Allan Sargeant"]
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+meerkat-core = { path = "../meerkat-core" }
+async-trait = "0.1"
+getrandom = "0.4"
+mdns-sd = "0.21"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha1 = "0.11"
+md-5 = "0.11"
+socket2 = { version = "0.6", features = ["all"] }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "sync", "macros"] }
+
