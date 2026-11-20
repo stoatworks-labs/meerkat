@@ -150,6 +150,10 @@ v0.1.0 is the first tagged build: a beta.
 
 NDI® is a registered trademark of Vizrt NDI AB. See [ndi.video](https://ndi.video).
 
+<!-- attributions:start -->
+This project is built on other people's work — see [ATTRIBUTIONS.md](ATTRIBUTIONS.md).
+<!-- attributions:end -->
+
 ## Licence
 
 MIT. See [LICENSE](LICENSE).
