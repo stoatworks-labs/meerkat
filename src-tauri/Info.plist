@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!--
+    Merged into the bundle's Info.plist by tauri-bundler.
+
+    Local network access. Since macOS 15 an app must say why it talks to the
+    local network, and from 26 a GUI-launched app without this key is denied
+    LAN traffic silently: no error, no prompt, and every camera looks absent.
+    It never shows in development, because a process started from Terminal
+    inherits Terminal's own permission.
+
+    The string is shown verbatim in the macOS permission prompt.
+
+    Verify after a build with:
+      plutil -p Meerkat.app/Contents/Info.plist | grep NSLocalNetwork
+  -->
+  <key>NSLocalNetworkUsageDescription</key>
+  <string>Meerkat looks for PTZ cameras on your local network with each brand's own discovery broadcast, and changes a camera's address or opens its web page only when you ask it to.</string>
+</dict>
+</plist>

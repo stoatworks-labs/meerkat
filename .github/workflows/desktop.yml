@@ -26,7 +26,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: macos-14
+          - platform: macos-15
             target: universal-apple-darwin
             rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
             name: macOS (universal)
@@ -72,7 +72,18 @@ jobs:
 
       - name: Test
         working-directory: src-tauri
-        run: cargo test --workspace
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = Windows ]; then
+            # The app crate's test binary carries no common-controls manifest
+            # on Windows, so it dies at load (STATUS_ENTRYPOINT_NOT_FOUND)
+            # before a test runs: a Tauri limitation, not a failing test.
+            # Build it and run everything else; macOS and Linux run it.
+            cargo test --workspace --exclude meerkat
+            cargo test -p meerkat --no-run
+          else
+            cargo test --workspace
+          fi
 
       - uses: tauri-apps/tauri-action@v1
         env:

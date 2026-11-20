@@ -105,7 +105,13 @@ impl Driver for Vhd {
     async fn discover(&self, ctx: &ScanCtx) -> Result<()> {
         let port = ctx.port("udp", PORT);
         let testing = ctx.ports.contains_key("vhd.udp");
-        let listen = match udp_socket(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, port), UdpOpts { reuse: true, broadcast: true, ..Default::default() }) {
+        // On a real network the answers are multicast to the group's port, so
+        // the listener has to sit on it. Against the simulator they come back
+        // to the sending socket, and the group's port IS the simulator's own
+        // socket: macOS lets a wildcard bind share it, Linux refuses, and the
+        // scan used to give up there. So the simulator gets an ephemeral port.
+        let listen_port = if testing { 0 } else { port };
+        let listen = match udp_socket(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, listen_port), UdpOpts { reuse: true, broadcast: true, ..Default::default() }) {
             Ok(s) => s,
             Err(e) => {
                 ctx.log(Level::Debug, format!("cannot listen on UDP {port}: {e}"));
