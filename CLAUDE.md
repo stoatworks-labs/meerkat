@@ -32,5 +32,20 @@ cd src-tauri && cargo run -p meerkat-cli -- scan --demo
 
 ## Release
 
-No release, CI or website entry yet. Bump the version in `package.json`,
-`src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml` together.
+Released through the fleet's process (stoatworks-backend `release/RELEASE-CHECKLIST.md`).
+Meerkat is in the website's `projects.json`, sync-about's TARGETS, sync-theme's table and
+`attributions/names.json`.
+
+- Bump the version in `package.json`, `src-tauri/tauri.conf.json` and every
+  `src-tauri/**/Cargo.toml` together, then `cargo update -w` so `Cargo.lock` follows, and
+  grep for the old version before tagging.
+- Push a `v*` tag: `.github/workflows/desktop.yml` builds the universal macOS app and dmg, the
+  Linux deb and rpm and the Windows installer, and publishes the release with tauri-action.
+- tauri-action rewrites the release body, so write the notes with `gh release edit
+  --notes-file` after every job has finished.
+- The autosign agent signs and notarises the macOS assets. Then, from the backend:
+  `check-notarised.py --repo meerkat`, `gen-downloads.py --repo meerkat` (README block and
+  the site's `downloads.json`; set `version` in `projects.json` by hand) and
+  `gen-catalog-data.py --repo meerkat`. Refresh the Homebrew tap once the site is live.
+- `docs/USER-GUIDE.md` is the only copy of the guide anyone edits. The PDF and the site page
+  are generated from it by the website's `scripts/build_guides.py meerkat`.

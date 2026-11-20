@@ -21,6 +21,13 @@ each camera's built-in web UI with one click.
 | **Any ONVIF camera** (AVer, Lumens, Marshall, Avonic…) | WS-Discovery (239.255.255.250:3702) | Yes, with the camera's login | Answers are unicast, so a camera on the wrong subnet is not seen this way. |
 | **Any NDI camera** | mDNS `_ndi._tcp` | No: the brand's own driver does that | Unknown NDI sources still get a web UI link. |
 
+![Meerkat after a scan of its demo cameras: a Panasonic on the wrong subnet selected, with its network settings](docs/screenshots/overview.png)
+
+![A BirdDog on its fallback address, with the Reach it from here panel offering a temporary address](docs/screenshots/reach-it.png)
+
+*Both pictures are the app's interface on its browser preview backend, scanning the eight
+simulated cameras. The [user guide](docs/USER-GUIDE.md) covers every control.*
+
 ## Across subnets
 
 A camera fresh out of the box rarely sits on your subnet. Meerkat handles that three ways:
@@ -124,6 +131,8 @@ trait. The engine, the UI and the CLI pick it up from `meerkat_drivers::all()`. 
 
 ## Status
 
+v0.1.0 is the first tagged build: a beta.
+
 - **Never run against real cameras.** Every driver is written from the vendor's public
   documentation and tested against the simulator. The first real Panasonic, Sony and BirdDog
   on the bench are the next test, each one read first and then re-addressed.
@@ -138,6 +147,8 @@ trait. The engine, the UI and the CLI pick it up from `meerkat_drivers::all()`. 
   remove them (`ifconfig … alias` through an administrator prompt on macOS, `ip addr` through
   `pkexec` on Linux, `New-NetIPAddress` through an elevated PowerShell on Windows) are checked as
   strings in the unit tests and have not yet been run on a real interface.
+
+NDI® is a registered trademark of Vizrt NDI AB. See [ndi.video](https://ndi.video).
 
 ## Licence
 

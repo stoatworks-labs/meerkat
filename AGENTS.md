@@ -120,6 +120,10 @@ through the same route, and `Engine::browser_url` does it for Open web UI. A dri
   after the confirm has applied it, or readdress tests flake.
 - Commands that take an `AppHandle` are generic over `R: Runtime`, so the mock-runtime test can
   drive them. Keep them that way.
+- `src-tauri/Info.plist` carries `NSLocalNetworkUsageDescription`. Without it macOS 26
+  silently denies a Finder-launched app all LAN traffic, and every camera looks absent. It
+  never shows in development, because a process started from Terminal inherits Terminal's
+  permission. Check a built bundle with `plutil -p Meerkat.app/Contents/Info.plist`.
 - The app raises its file-descriptor limit at start. A /22 sweep holds a socket per in-flight
   probe per driver, and macOS starts apps at 256.
 - **Nothing has been run against a real camera.** Treat every driver as written from documents
