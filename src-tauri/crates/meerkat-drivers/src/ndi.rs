@@ -29,12 +29,41 @@ pub const SERVICE: &str = "_ndi._tcp.local.";
 
 /// `("BIRDDOG-608F9", Some("CAM"))` from `BIRDDOG-608F9 (CAM)._ndi._tcp.local.`.
 pub fn split_name(fullname: &str) -> (String, Option<String>) {
-    let inst = fullname.strip_suffix(SERVICE).map(|s| s.trim_end_matches('.')).unwrap_or(fullname);
-    let inst = inst.replace("\\032", " ").replace("\\(", "(").replace("\\)", ")");
+    // Only the one dot before the service type: an instance name can itself
+    // end in an (escaped) dot.
+    let inst = fullname.strip_suffix(SERVICE).map(|s| s.strip_suffix('.').unwrap_or(s)).unwrap_or(fullname);
+    let inst = unescape(inst);
     match (inst.rfind(" ("), inst.ends_with(')')) {
         (Some(i), true) => (inst[..i].trim().to_string(), Some(inst[i + 2..inst.len() - 1].trim().to_string())),
         _ => (inst.trim().to_string(), None),
     }
+}
+
+/// Undo DNS-SD label escaping: `\DDD` is a decimal byte (`\032` a space) and
+/// `\` before anything else is that character. mdns-sd 0.22 keeps `\.` and
+/// `\\` in the fullnames it reports, so `Studio.A (CAM)` arrives as
+/// `Studio\.A (CAM)`.
+fn unescape(label: &str) -> String {
+    let b = label.as_bytes();
+    let mut out = Vec::with_capacity(b.len());
+    let mut i = 0;
+    while i < b.len() {
+        if b[i] != b'\\' || i + 1 == b.len() {
+            out.push(b[i]);
+            i += 1;
+        } else if let Some(n) = b
+            .get(i + 1..i + 4)
+            .filter(|d| d.iter().all(u8::is_ascii_digit))
+            .and_then(|d| std::str::from_utf8(d).ok()?.parse::<u8>().ok())
+        {
+            out.push(n);
+            i += 4;
+        } else {
+            out.push(b[i + 1]);
+            i += 2;
+        }
+    }
+    String::from_utf8_lossy(&out).into_owned()
 }
 
 pub fn camera_from_service(fullname: &str, host: &str, port: u16, ip: Ipv4Addr) -> Camera {
@@ -157,6 +186,11 @@ mod tests {
         assert_eq!(split_name("BIRDDOG-608F9 (CAM)._ndi._tcp.local."), ("BIRDDOG-608F9".into(), Some("CAM".into())));
         assert_eq!(split_name("TAIL 2_BC3CBC (OBSBOT)._ndi._tcp.local."), ("TAIL 2_BC3CBC".into(), Some("OBSBOT".into())));
         assert_eq!(split_name("STUDIO._ndi._tcp.local."), ("STUDIO".into(), None));
+        // Escapes as mdns-sd 0.22 reports them, and the older \DDD form.
+        assert_eq!(split_name("Studio\\.A (CAM)._ndi._tcp.local."), ("Studio.A".into(), Some("CAM".into())));
+        assert_eq!(split_name("PTZ\\032ONE\\032\\(CAM\\)._ndi._tcp.local."), ("PTZ ONE".into(), Some("CAM".into())));
+        assert_eq!(split_name("v2\\.._ndi._tcp.local."), ("v2.".into(), None));
+        assert_eq!(split_name("A\\\\B._ndi._tcp.local."), ("A\\B".into(), None));
         let c = camera_from_service("BIRDDOG-608F9 (CAM)._ndi._tcp.local.", "birddog-608f9.local.", 5961, Ipv4Addr::new(10, 0, 0, 7));
         assert_eq!(c.vendor, "BirdDog");
         assert_eq!(c.name.as_deref(), Some("BIRDDOG-608F9 (CAM)"));
