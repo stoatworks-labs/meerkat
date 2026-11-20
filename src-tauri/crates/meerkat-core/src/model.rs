@@ -192,6 +192,11 @@ pub struct Camera {
     /// it. Filled in by the engine from the vendor and model.
     #[serde(default)]
     pub catalog: CatalogMatch,
+    /// The driver that can send it a firmware file, when one has seen it
+    /// (ONVIF, for a camera that answered WS-Discovery). Filled in by the
+    /// engine; the camera still has to say it accepts one.
+    #[serde(default)]
+    pub firmware_via: Option<String>,
 }
 
 impl Camera {
@@ -217,6 +222,7 @@ impl Camera {
             reach: Reach::Unknown,
             last_seen: 0,
             catalog: CatalogMatch::default(),
+            firmware_via: None,
         }
     }
 

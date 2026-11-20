@@ -96,6 +96,7 @@ impl Driver for Vhd {
                 "Discovery only: the platform's set command is not verified on hardware, so change these cameras' addresses in their web UI, or over ONVIF.",
                 "Seen on PTZOptics and other cameras built on the ValueHD platform.",
             ],
+            firmware: None,
             enabled_by_default: true,
             recovery: None,
         }

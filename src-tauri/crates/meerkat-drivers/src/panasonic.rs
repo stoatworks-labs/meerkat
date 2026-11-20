@@ -391,6 +391,7 @@ impl Driver for Panasonic {
                 "Cameras with user authentication on need their admin login. UE160-generation cameras with authentication on use an encrypted variant Meerkat does not speak: use the web UI or switch authentication off first.",
                 "Switching a camera to DHCP is not possible over Easy IP; set it in the web UI.",
             ],
+            firmware: None,
             enabled_by_default: true,
             recovery: None,
         }

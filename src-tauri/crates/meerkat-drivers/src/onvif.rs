@@ -3,8 +3,9 @@
 //! Lumens, Marshall, PTZOptics, Avonic…) speak it, so it covers whatever has
 //! no vendor driver.
 //!
-//! Sources: ONVIF Core Specification (§5.9 auth, §7.3 discovery, §8.2 network),
-//! WS-Discovery 2005/04, OASIS UsernameToken Profile 1.0.
+//! Sources: ONVIF Core Specification (§5.9 auth, §7.3 discovery, §8.2 network,
+//! §8.3.9 firmware; version 26.06 for the firmware facts), WS-Discovery
+//! 2005/04, OASIS UsernameToken Profile 1.0.
 //!
 //! - **Discovery:** a SOAP Probe to 239.255.255.250:3702 out of each interface
 //!   (and to `<ip>:3702` in a sweep). ProbeMatches come back unicast, so unlike
@@ -17,6 +18,16 @@
 //! - **Write order:** gateway and DNS first, then SetNetworkInterfaces. If the
 //!   camera says RebootNeeded it stays on the old address until SystemReboot,
 //!   which Meerkat sends; otherwise it moves at once.
+//! - **Firmware** (§8.3.9): the camera says it takes a file with the
+//!   `HttpFirmwareUpgrade` attribute of GetServiceCapabilities' System
+//!   capabilities. StartFirmwareUpgrade (access class UNRECOVERABLE, so an
+//!   administrator's login) answers an UploadUri, an UploadDelay to wait out
+//!   and the ExpectedDownTime. The file goes there by HTTP POST as
+//!   `application/octet-stream`, authenticated by HTTP Digest (§5.9.1); 415
+//!   means the file is not valid for it, 500 an error on the camera. It
+//!   then reprograms itself and reboots, keeping its address and logins.
+//!   The older UpgradeSystemFirmware (an MTOM attachment) is deprecated and
+//!   not used.
 
 use std::collections::HashSet;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
@@ -24,8 +35,8 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use meerkat_core::driver::{Level, Result};
-use meerkat_core::http::{base64, Http};
+use meerkat_core::driver::{FirmwareCheck, FirmwareFile, InstallStage, Level, Result};
+use meerkat_core::http::{base64, Http, HttpError};
 use meerkat_core::net::{self, udp_socket, UdpOpts};
 use meerkat_core::{Caps, Camera, Credentials, Driver, DriverError, DriverInfo, Mac, Method, NetConfig, OpCtx, ScanCtx, WriteOutcome};
 use sha1::{Digest, Sha1};
@@ -40,6 +51,88 @@ pub struct Onvif;
 pub const ID: &str = "onvif";
 pub const WSD_PORT: u16 = 3702;
 pub const WSD_GROUP: Ipv4Addr = Ipv4Addr::new(239, 255, 255, 250);
+
+/// How the firmware goes, for the UI.
+pub const FIRMWARE_METHOD: &str = "ONVIF StartFirmwareUpgrade (HTTP POST)";
+/// When the camera gives no ExpectedDownTime.
+const DEFAULT_DOWN_MS: u64 = 120_000;
+const MAX_DOWN_MS: u64 = 20 * 60_000;
+const MAX_DELAY_MS: u64 = 2 * 60_000;
+
+/// An `xs:duration` (`PT30S`, `PT1M30.5S`, `P1DT2H`) in milliseconds. Years
+/// and months, which have no fixed length, and negative durations are
+/// refused.
+pub fn parse_duration(s: &str) -> Option<u64> {
+    let rest = s.trim().strip_prefix('P')?;
+    let (date, time) = match rest.split_once('T') {
+        Some((d, t)) => (d, Some(t)),
+        None => (rest, None),
+    };
+    let mut ms = 0f64;
+    let mut any = false;
+    let mut eat = |part: &str, units: &[(char, f64)]| -> Option<()> {
+        let (mut num, mut next) = (String::new(), 0);
+        for c in part.chars() {
+            if c.is_ascii_digit() || c == '.' {
+                num.push(c);
+                continue;
+            }
+            let i = units.iter().position(|(u, _)| *u == c)?;
+            if i < next || num.is_empty() {
+                return None;
+            }
+            next = i + 1;
+            ms += num.parse::<f64>().ok()? * units[i].1;
+            num.clear();
+            any = true;
+        }
+        num.is_empty().then_some(())
+    };
+    eat(date, &[('D', 86_400_000.0)])?;
+    match time {
+        Some("") => return None,
+        Some(t) => eat(t, &[('H', 3_600_000.0), ('M', 60_000.0), ('S', 1000.0)])?,
+        None => {}
+    }
+    any.then_some(ms.round() as u64)
+}
+
+/// Where to send the file: the UploadUri's port, path and query, on the
+/// camera's own address — a camera behind NAT, or with a stale setting, can
+/// name another host, and the file goes to the camera whatever it says. The
+/// flag is set when the host it named was another.
+pub fn upload_target(uri: &str, ip: Ipv4Addr) -> std::result::Result<(String, bool), String> {
+    let bad = || format!("the camera gave an upload address Meerkat cannot use: {uri}");
+    let (scheme, rest) = uri.trim().split_once("://").ok_or_else(bad)?;
+    if scheme.eq_ignore_ascii_case("https") {
+        return Err("the camera wants the file over HTTPS, which Meerkat does not speak: follow its maker's steps".into());
+    }
+    if !scheme.eq_ignore_ascii_case("http") {
+        return Err(bad());
+    }
+    let (authority, path) = match rest.find('/') {
+        Some(i) => (&rest[..i], &rest[i..]),
+        None => (rest, "/"),
+    };
+    let authority = authority.rsplit('@').next().unwrap_or(authority);
+    let (host, port) = match authority.strip_prefix('[') {
+        Some(v6) => {
+            let (h, p) = v6.split_once(']').ok_or_else(bad)?;
+            (h, p.strip_prefix(':'))
+        }
+        None => match authority.rsplit_once(':') {
+            Some((h, p)) => (h, Some(p)),
+            None => (authority, None),
+        },
+    };
+    let port: u16 = match port {
+        Some(p) if !p.is_empty() => p.parse().map_err(|_| bad())?,
+        _ => 80,
+    };
+    let moved = host.parse::<Ipv4Addr>().ok() != Some(ip);
+    let url = if port == 80 { format!("http://{ip}{path}") } else { format!("http://{ip}:{port}{path}") };
+    Ok((url, moved))
+}
 
 pub fn probe_xml(message_id: &str) -> String {
     format!(
@@ -278,6 +371,7 @@ impl Driver for Onvif {
             ],
             enabled_by_default: true,
             recovery: None,
+            firmware: Some("ONVIF StartFirmwareUpgrade (Core spec §8.3.9): the file goes to the camera by HTTP POST, when the camera says it accepts one"),
         }
     }
 
@@ -404,6 +498,68 @@ impl Driver for Onvif {
         Ok(WriteOutcome { message, restarts: reboot_needed, expect_ip: if cfg.dhcp { None } else { Some(cfg.ip) }, settle_ms: if reboot_needed { 25_000 } else { 2_000 } })
     }
 
+    async fn check_firmware(&self, op: &OpCtx, cam: &Camera) -> Result<FirmwareCheck> {
+        let s = Session::open(&op.http, xaddr_of(cam, &op.ports), Some(op.creds()?.clone())).await;
+        let info = s.call("<tds:GetDeviceInformation/>", true).await?;
+        let (accepts, note) = match s.call("<tds:GetServiceCapabilities/>", true).await {
+            Ok(x) => match xml_attr(&x, "System", "HttpFirmwareUpgrade").as_deref() {
+                Some("true") | Some("1") => (true, None),
+                _ => (false, Some("Its ONVIF service does not offer firmware upload (HttpFirmwareUpgrade is off): follow its maker's steps.".to_string())),
+            },
+            Err(e) => (false, Some(format!("It did not answer GetServiceCapabilities ({e}), so it does not say it takes firmware over ONVIF: follow its maker's steps."))),
+        };
+        Ok(FirmwareCheck {
+            driver: ID.into(),
+            method: FIRMWARE_METHOD.into(),
+            manufacturer: xml_text(&info, "Manufacturer"),
+            model: xml_text(&info, "Model"),
+            version: xml_text(&info, "FirmwareVersion"),
+            accepts,
+            note,
+        })
+    }
+
+    async fn install_firmware(&self, op: &OpCtx, cam: &Camera, file: &FirmwareFile, stage: &(dyn Fn(InstallStage) + Send + Sync)) -> Result<WriteOutcome> {
+        let creds = op.creds()?.clone();
+        let s = Session::open(&op.http, xaddr_of(cam, &op.ports), Some(creds.clone())).await;
+        let r = s.call("<tds:StartFirmwareUpgrade/>", true).await?;
+        let uri = xml_text(&r, "UploadUri").filter(|u| !u.trim().is_empty()).ok_or_else(|| DriverError::Protocol("the camera's StartFirmwareUpgrade reply has no UploadUri".into()))?;
+        let (url, moved) = upload_target(&uri, cam.ip).map_err(DriverError::Protocol)?;
+        let delay = xml_text(&r, "UploadDelay").and_then(|d| parse_duration(&d)).unwrap_or(0).min(MAX_DELAY_MS);
+        let down = xml_text(&r, "ExpectedDownTime").and_then(|d| parse_duration(&d)).unwrap_or(DEFAULT_DOWN_MS).min(MAX_DOWN_MS);
+        if delay > 0 {
+            stage(InstallStage::Pausing { secs: delay.div_ceil(1000) });
+            tokio::time::sleep(Duration::from_millis(delay)).await;
+        }
+        let len = file.data.len() as u64;
+        stage(InstallStage::Sending { bytes: len });
+        // A slow camera takes a few hundred kB a second; some answer only once
+        // the image is written.
+        let timeout = Duration::from_secs(120 + len / 200_000);
+        let mut message = match op.http.upload(&url, "application/octet-stream", file.data.clone(), Some(&creds), timeout).await {
+            Ok(_) => "The camera took the file".to_string(),
+            Err(HttpError::Status { status: 415, .. }) => {
+                return Err(DriverError::Protocol("The camera refused the file: HTTP 415, ONVIF's answer for a file that is not valid for it. Check that it is the maker's firmware for this model.".into()))
+            }
+            Err(HttpError::Status { status: 500, body }) => {
+                return Err(DriverError::Protocol(format!(
+                    "The camera could not install the file: HTTP 500, ONVIF's answer for an error on the camera{}. Leave it powered on and check its web UI.",
+                    if body.trim().is_empty() { String::new() } else { format!(" ({})", body.trim()) }
+                )))
+            }
+            Err(HttpError::Status { status, body }) => return Err(DriverError::Protocol(format!("The camera answered the upload with HTTP {status}: {body}"))),
+            Err(HttpError::Unauthorized) => return Err(DriverError::Protocol("the camera refused that username and password for the upload; it needs an administrator's".into())),
+            Err(HttpError::Transport(e)) if e == "could not connect" => return Err(DriverError::Unreachable(format!("could not connect to {url} to send the file"))),
+            // Some cameras restart the moment the image is in, without answering.
+            Err(HttpError::Transport(e)) => format!("The camera stopped answering during the upload ({e}); it may be installing the file"),
+        };
+        if moved {
+            message += &format!(" (it named another host for the upload, {uri}; the file went to {} instead)", cam.ip);
+        }
+        // §8.3.9: an install keeps the address, so the camera comes back where it was.
+        Ok(WriteOutcome { message, restarts: true, expect_ip: Some(cam.ip), settle_ms: down })
+    }
+
     fn web_url(&self, cam: &Camera) -> Option<String> {
         // The device service often lives on its own port; the web UI is on 80.
         Some(format!("http://{}/", cam.ip))
@@ -472,6 +628,32 @@ mod tests {
         let h = security_header(&Credentials { username: "user".into(), password: "userpassword".into() }, &nonce, "2010-09-16T07:50:45Z");
         assert!(h.contains(">tuOSpGlFlIXsozq4HFNeeGeFLEI=<"), "{h}");
         assert!(h.contains(">LKqI6G/AikKCQrN0zqZFlg==<"));
+    }
+
+    #[test]
+    fn xs_durations() {
+        assert_eq!(parse_duration("PT30S"), Some(30_000));
+        assert_eq!(parse_duration("PT1M30.5S"), Some(90_500));
+        assert_eq!(parse_duration(" P1DT2H "), Some(93_600_000));
+        assert_eq!(parse_duration("PT0S"), Some(0));
+        assert_eq!(parse_duration("P0D"), Some(0));
+        for bad in ["", "P", "PT", "30S", "P1Y", "P1M", "-PT5S", "PT5", "PTS", "PT5S1M"] {
+            assert_eq!(parse_duration(bad), None, "{bad}");
+        }
+    }
+
+    #[test]
+    fn the_file_goes_to_the_camera_whatever_host_it_names() {
+        let ip = Ipv4Addr::new(10, 0, 0, 21);
+        assert_eq!(upload_target("http://10.0.0.21/upgrade?t=1", ip).unwrap(), ("http://10.0.0.21/upgrade?t=1".into(), false));
+        assert_eq!(upload_target("http://192.168.0.1:8080/fw", ip).unwrap(), ("http://10.0.0.21:8080/fw".into(), true));
+        assert_eq!(upload_target("http://camera.local/fw", ip).unwrap(), ("http://10.0.0.21/fw".into(), true));
+        assert_eq!(upload_target("http://[fe80::1]:81", ip).unwrap(), ("http://10.0.0.21:81/".into(), true));
+        assert_eq!(upload_target("HTTP://u:p@10.0.0.21:80/fw", ip).unwrap(), ("http://10.0.0.21/fw".into(), false));
+        assert!(upload_target("https://10.0.0.21/fw", ip).unwrap_err().contains("HTTPS"));
+        assert!(upload_target("ftp://10.0.0.21/fw", ip).is_err());
+        assert!(upload_target("/fw", ip).is_err());
+        assert!(upload_target("http://10.0.0.21:99999/fw", ip).is_err());
     }
 
     #[test]

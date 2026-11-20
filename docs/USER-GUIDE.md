@@ -174,7 +174,7 @@ every brand, with a search by model.
 
 ## Firmware updates
 
-Meerkat does not supply or install firmware. The **Firmware update** section points you at
+Meerkat does not supply or download firmware. The **Firmware update** section points you at
 the maker:
 
 - **The maker's download page** for the model. Some ask you to accept a licence first.
@@ -186,6 +186,39 @@ the maker:
 
 Update one camera at a time, from a computer on its own network, and never during a show.
 **Firmware downloads…** in the sidebar lists every brand's pages.
+
+### Installing a file from Meerkat
+
+A camera found over ONVIF that says it takes a firmware file over HTTP shows **Install a
+firmware file…** in its firmware section. Download the file from the maker's page first; the
+dialog then goes in three steps.
+
+1. **Ask the camera.** Give its administrator login and press **Ask it**. Meerkat reads what
+   the camera is, the firmware it runs, and whether it takes a file. This only reads. A
+   camera that does not say it takes one gets the reason, and nothing more happens.
+2. **The file.** Choose the file you downloaded. Meerkat shows its size and its SHA-256: if
+   the maker publishes a checksum, it should match. The maker's own warnings for the model
+   are shown again here.
+3. **Confirm.** Tick that the file is the maker's firmware for that model, from the maker's
+   own page, and press **Install on …**.
+
+Meerkat then asks the camera to get ready, waits the time the camera asks for, sends the
+file, and waits as long as the camera says it will be away. It looks for the camera again
+and reads its version:
+
+- **Back, running 2.00 (was 1.00)**: the install took.
+- **Back, but still running …**: the camera did not take the file. Check its web UI.
+- **Not back after …**: it may still be installing. Leave it powered, and scan again later.
+- **The camera refused the file (HTTP 415)**: the file is not one this camera takes. Nothing
+  was installed.
+
+Keep the camera powered and connected until it is back: a camera that loses power while it
+installs can need its maker's repair. Meerkat cannot undo an update. Under ONVIF the camera
+keeps its address and logins. The file always goes to the camera's own address, never to
+another host the camera names, and never over a camera on another subnet: reach it first.
+
+Brands whose upload is not ONVIF (Sony, AVer's own upload, Panasonic) keep the maker's steps.
+In demo mode, the simulated AVer takes **Use a pretend file for this simulated camera**.
 
 ## A camera on the wrong subnet
 
@@ -250,11 +283,14 @@ cargo run -p meerkat-cli -- scan --range 10.20.0.0/24  # plus a routed subnet
 cargo run -p meerkat-cli -- set <camera> --ip 192.168.10.21 --prefix 24 --gw 192.168.10.1        # dry run
 cargo run -p meerkat-cli -- set <camera> --ip 192.168.10.21 --prefix 24 --gw 192.168.10.1 --yes  # do it
 cargo run -p meerkat-cli -- web <camera>
+cargo run -p meerkat-cli -- install <camera> fw.bin --user admin --pass …         # dry run
+cargo run -p meerkat-cli -- install <camera> fw.bin --user admin --pass … --yes   # send it
 cargo run -p meerkat-cli -- scan --demo --json         # against the simulator
 ```
 
 `<camera>` is a MAC address, an IP address or a row id from the scan. `set` prints the
-current and the new settings and does nothing without `--yes`.
+current and the new settings and does nothing without `--yes`; `install` without a file only
+asks the camera what it runs, and with one does nothing without `--yes`.
 
 ## What has been checked
 
@@ -265,11 +301,15 @@ current and the new settings and does nothing without `--yes`.
 - **Temporary addresses in demo mode**, including a BirdDog reached on its fallback
   address and re-addressed over its API.
 - **The command layer of the desktop app**, on Tauri's mock runtime.
+- **Firmware install over ONVIF against the simulator**: the login, the camera's answer, a
+  file for another model refused, a wrong login refused, and the camera back on the new
+  version.
 
 Not yet:
 
 - **Changing the address of a real camera**, of any brand. The first real Panasonic, Sony
   and BirdDog on the bench are the next test, each read first and then re-addressed.
+- **Sending firmware to a real camera.**
 - **The temporary-address commands on a real interface**, on any of the three systems.
   Only the exact commands are checked, in the tests.
 - **Neuralyzer** alongside Meerkat.

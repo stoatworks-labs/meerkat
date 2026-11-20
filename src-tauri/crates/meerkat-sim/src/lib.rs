@@ -4,8 +4,10 @@
 //! ephemeral ports: Panasonic Easy IP (search, set, ack, and a change applied
 //! only after the confirm — like a UE160), Panasonic's AW CGI, Sony IP Setup
 //! (with the WRITE lock), BirdDog's REST API (/EthSetup applied on /reboot),
-//! ONVIF (WS-Discovery and a device service that checks the UsernameToken
-//! digest) and VHD discovery.
+//! ONVIF (WS-Discovery, a device service that checks the UsernameToken
+//! digest, and a firmware upload behind HTTP Digest that installs
+//! [`firmware_file`] images and goes quiet while it "reboots") and VHD
+//! discovery.
 //!
 //! [`Sim::sandbox`] is what the engine needs to scan it: a fake `sim0`
 //! interface (192.168.10.20/24), sockets bound to loopback, the simulator's
@@ -18,6 +20,7 @@
 use std::collections::HashMap;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 use meerkat_core::driver::PortMap;
 use meerkat_core::http::Route;
@@ -64,6 +67,49 @@ pub struct SimCam {
     pub pending: Option<(Ipv4Addr, u8, Ipv4Addr)>,
     /// How many times the camera was told to reboot.
     pub reboots: u32,
+    /// ONVIF: GetServiceCapabilities says HttpFirmwareUpgrade.
+    pub http_firmware: bool,
+    /// ONVIF: the upload StartFirmwareUpgrade opened, if one is open.
+    pub upgrade_token: Option<String>,
+    /// Installing firmware: it answers nothing until then.
+    pub down_until: Option<Instant>,
+    /// POSTs to the firmware upload, so a test can see the file went once.
+    pub firmware_posts: u32,
+}
+
+impl SimCam {
+    pub fn is_down(&self) -> bool {
+        self.down_until.is_some_and(|t| Instant::now() < t)
+    }
+}
+
+/// The first line of a simulated firmware image.
+pub const FIRMWARE_MAGIC: &str = "MEERKAT-SIM-FIRMWARE";
+
+/// A firmware image the simulator's ONVIF camera installs, when `model` is
+/// its own. A real camera's format is its maker's business; this one is
+/// three lines of text, so a demo can make one.
+pub fn firmware_file(model: &str, version: &str) -> Vec<u8> {
+    format!("{FIRMWARE_MAGIC}\nmodel={model}\nversion={version}\n").into_bytes()
+}
+
+/// The model and version a [`firmware_file`] is for. Anything after its
+/// header (padding, to make a big one) is ignored.
+fn read_firmware(data: &[u8]) -> Option<(String, String)> {
+    let head = String::from_utf8_lossy(&data[..data.len().min(4096)]);
+    let mut lines = head.lines();
+    if lines.next()? != FIRMWARE_MAGIC {
+        return None;
+    }
+    let (mut model, mut version) = (None, None);
+    for l in lines {
+        if let Some(v) = l.strip_prefix("model=") {
+            model = Some(v.trim().to_string());
+        } else if let Some(v) = l.strip_prefix("version=") {
+            version = Some(v.trim().to_string());
+        }
+    }
+    Some((model?, version?)).filter(|(_, v)| !v.is_empty())
 }
 
 impl SimCam {
@@ -86,6 +132,10 @@ impl SimCam {
             eth_setup: true,
             pending: None,
             reboots: 0,
+            http_firmware: kind == Kind::Onvif,
+            upgrade_token: None,
+            down_until: None,
+            firmware_posts: 0,
         }
     }
 }
@@ -449,7 +499,7 @@ async fn onvif_wsd(s: Arc<UdpSocket>, cams: Arc<Mutex<Vec<SimCam>>>) {
             continue;
         }
         let id = xml_text(&text, "MessageID").unwrap_or_default();
-        let list: Vec<SimCam> = cams.lock().unwrap().iter().filter(|c| c.kind == Kind::Onvif).cloned().collect();
+        let list: Vec<SimCam> = cams.lock().unwrap().iter().filter(|c| c.kind == Kind::Onvif && !c.is_down()).cloned().collect();
         for c in list {
             let body = format!(
                 r#"<?xml version="1.0"?><s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:d="http://schemas.xmlsoap.org/ws/2005/04/discovery"><s:Header><a:RelatesTo>{id}</a:RelatesTo></s:Header><s:Body><d:ProbeMatches><d:ProbeMatch><a:EndpointReference><a:Address>urn:uuid:sim-{mac}</a:Address></a:EndpointReference><d:Scopes>onvif://www.onvif.org/type/ptz onvif://www.onvif.org/name/{name} onvif://www.onvif.org/hardware/{model} onvif://www.onvif.org/Profile/Streaming</d:Scopes><d:XAddrs>http://{ip}/onvif/device_service</d:XAddrs></d:ProbeMatch></d:ProbeMatches></s:Body></s:Envelope>"#,
@@ -551,6 +601,21 @@ fn onvif_handle(req: &str, c: &mut SimCam) -> (u16, String) {
             c.dhcp = false;
         }
         "<tds:SetNetworkInterfacesResponse><tds:RebootNeeded>true</tds:RebootNeeded></tds:SetNetworkInterfacesResponse>".into()
+    } else if body.contains("GetServiceCapabilities") {
+        format!(
+            r#"<tds:GetServiceCapabilitiesResponse><tds:Capabilities><tds:Network IPFilter="false" ZeroConfiguration="false" IPVersion6="false" DynDNS="false"/><tds:Security HttpDigest="true" UsernameToken="true"/><tds:System DiscoveryResolve="false" DiscoveryBye="true" RemoteDiscovery="false" SystemBackup="false" SystemLogging="false" FirmwareUpgrade="false" HttpFirmwareUpgrade="{}" HttpSystemBackup="false" HttpSystemLogging="false" HttpSupportInformation="false"/></tds:Capabilities></tds:GetServiceCapabilitiesResponse>"#,
+            c.http_firmware
+        )
+    } else if body.contains("StartFirmwareUpgrade") {
+        if !c.http_firmware {
+            return (400, soap(r#"<s:Fault><s:Code><s:Value>s:Receiver</s:Value><s:Subcode><s:Value>ter:ActionNotSupported</s:Value></s:Subcode></s:Code><s:Reason><s:Text xml:lang="en">Firmware upgrade over HTTP is not supported</s:Text></s:Reason></s:Fault>"#));
+        }
+        let token = format!("{}{}", c.mac.tail(), c.reboots + 1);
+        c.upgrade_token = Some(token.clone());
+        format!(
+            "<tds:StartFirmwareUpgradeResponse><tds:UploadUri>http://{}/onvif/firmware/{token}</tds:UploadUri><tds:UploadDelay>PT0.3S</tds:UploadDelay><tds:ExpectedDownTime>PT2S</tds:ExpectedDownTime></tds:StartFirmwareUpgradeResponse>",
+            c.ip
+        )
     } else if body.contains("SystemReboot") {
         c.reboots += 1;
         if let Some((ip, p, _)) = c.pending.take() {
@@ -562,6 +627,67 @@ fn onvif_handle(req: &str, c: &mut SimCam) -> (u16, String) {
         return (400, soap("<s:Fault><s:Reason><s:Text>unsupported</s:Text></s:Reason></s:Fault>"));
     };
     (200, soap(&r))
+}
+
+const SIM_REALM: &str = "Meerkat simulator";
+
+fn sim_nonce(c: &SimCam) -> String {
+    format!("sim{}{}", c.mac.tail(), c.reboots)
+}
+
+fn md5_hex(s: &str) -> String {
+    md5::Md5::digest(s.as_bytes()).iter().map(|b| format!("{b:02x}")).collect()
+}
+
+/// RFC 2617 Digest, checked the way a camera does.
+fn digest_ok(header: &str, method: &str, path: &str, login: &Credentials, nonce: &str) -> bool {
+    let Some(rest) = header.trim().strip_prefix("Digest ") else { return false };
+    let p = meerkat_core::http::parse_params(rest);
+    let get = |k: &str| p.get(k).map(String::as_str).unwrap_or("");
+    if get("username") != login.username || get("realm") != SIM_REALM || get("nonce") != nonce || get("uri") != path {
+        return false;
+    }
+    let ha1 = md5_hex(&format!("{}:{SIM_REALM}:{}", login.username, login.password));
+    let ha2 = md5_hex(&format!("{method}:{path}"));
+    let want = if get("qop") == "auth" { md5_hex(&format!("{ha1}:{nonce}:{}:{}:auth:{ha2}", get("nc"), get("cnonce"))) } else { md5_hex(&format!("{ha1}:{nonce}:{ha2}")) };
+    get("response") == want
+}
+
+/// The UploadUri StartFirmwareUpgrade handed out: HTTP Digest (ONVIF Core
+/// §5.9.1), then the §8.3.9 rules — octet-stream only, 415 for a file that
+/// is not this camera's, then a reboot. Returns the status, the body and any
+/// extra header lines.
+fn onvif_upload(method: &str, path: &str, headers: &HashMap<String, String>, data: &[u8], c: &mut SimCam) -> (u16, String, String) {
+    if method == "POST" {
+        c.firmware_posts += 1;
+    }
+    let nonce = sim_nonce(c);
+    if let Some(login) = &c.login {
+        if !headers.get("authorization").is_some_and(|a| digest_ok(a, method, path, login, &nonce)) {
+            return (401, "Unauthorized".into(), format!("WWW-Authenticate: Digest realm=\"{SIM_REALM}\", qop=\"auth\", nonce=\"{nonce}\", algorithm=MD5\r\n"));
+        }
+    }
+    if method != "POST" {
+        return (405, String::new(), "Allow: POST\r\n".into());
+    }
+    if c.upgrade_token.as_deref() != path.strip_prefix("/onvif/firmware/") {
+        return (404, "no firmware upgrade was started".into(), String::new());
+    }
+    if headers.get("content-type").map(String::as_str) != Some("application/octet-stream") {
+        return (415, "not application/octet-stream".into(), String::new());
+    }
+    match read_firmware(data) {
+        Some((model, version)) if model == c.model => {
+            c.firmware = version;
+            c.upgrade_token = None;
+            c.reboots += 1;
+            // A little longer than the ExpectedDownTime it gave, as cameras are.
+            c.down_until = Some(Instant::now() + Duration::from_millis(2500));
+            (200, "OK".into(), String::new())
+        }
+        Some((model, _)) => (415, format!("this image is for the {model}"), String::new()),
+        None => (415, "not a firmware image".into(), String::new()),
+    }
 }
 
 // ---------------------------------------------------------------- VHD
@@ -641,7 +767,8 @@ async fn serve(mut sock: TcpStream, cams: Arc<Mutex<Vec<SimCam>>>, mac: Mac) -> 
         }
     };
     let head = String::from_utf8_lossy(&buf[..head_end]).into_owned();
-    let len: usize = head.lines().find_map(|l| l.to_ascii_lowercase().strip_prefix("content-length:").map(|v| v.trim().parse().unwrap_or(0))).unwrap_or(0);
+    let headers: HashMap<String, String> = head.lines().skip(1).filter_map(|l| l.split_once(':')).map(|(k, v)| (k.trim().to_ascii_lowercase(), v.trim().to_string())).collect();
+    let len: usize = headers.get("content-length").and_then(|v| v.parse().ok()).unwrap_or(0);
     while buf.len() < head_end + len {
         let n = sock.read(&mut tmp).await?;
         if n == 0 {
@@ -649,15 +776,24 @@ async fn serve(mut sock: TcpStream, cams: Arc<Mutex<Vec<SimCam>>>, mac: Mac) -> 
         }
         buf.extend_from_slice(&tmp[..n]);
     }
-    let body = String::from_utf8_lossy(&buf[head_end..]).into_owned();
+    let raw = &buf[head_end..];
+    let body = String::from_utf8_lossy(raw).into_owned();
     let mut first = head.lines().next().unwrap_or("").split_whitespace();
     let method = first.next().unwrap_or("").to_string();
     let path = first.next().unwrap_or("/").to_string();
+    let mut extra = String::new();
     let (status, ctype, out) = {
         let mut cams = cams.lock().unwrap();
         match cams.iter_mut().find(|c| c.mac == mac) {
             None => (404, "text/plain", String::new()),
+            // Installing firmware: the connection just drops, as on a camera mid-reboot.
+            Some(c) if c.is_down() => return Ok(()),
             Some(c) if method == "GET" && path == "/" => (200, "text/html; charset=utf-8", web_ui(c)),
+            Some(c) if c.kind == Kind::Onvif && path.starts_with("/onvif/firmware/") => {
+                let (s, b, h) = onvif_upload(&method, &path, &headers, raw, c);
+                extra = h;
+                (s, "text/plain", b)
+            }
             Some(c) => match c.kind {
                 Kind::Panasonic => panasonic_http(&path, c),
                 Kind::BirdDog => birddog_http(&method, &path, &body, c),
@@ -673,9 +809,12 @@ async fn serve(mut sock: TcpStream, cams: Arc<Mutex<Vec<SimCam>>>, mac: Mac) -> 
         200 => "OK",
         204 => "No Content",
         400 => "Bad Request",
+        401 => "Unauthorized",
+        405 => "Method Not Allowed",
+        415 => "Unsupported Media Type",
         _ => "Not Found",
     };
-    let resp = format!("HTTP/1.1 {status} {reason}\r\nContent-Type: {ctype}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{out}", out.len());
+    let resp = format!("HTTP/1.1 {status} {reason}\r\nContent-Type: {ctype}\r\n{extra}Content-Length: {}\r\nConnection: close\r\n\r\n{out}", out.len());
     sock.write_all(resp.as_bytes()).await?;
     sock.shutdown().await
 }

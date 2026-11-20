@@ -8,6 +8,7 @@
 //! meerkat-cli set   <camera> --ip A [--prefix N | --mask M] [--gw G] [--dns D]... [--name N] [--user U --pass P] [scope] [--yes]
 //! meerkat-cli set   <camera> --dhcp [--user U --pass P] [scope] [--yes]
 //! meerkat-cli web   <camera> [scope]
+//! meerkat-cli install <camera> [<file>] [--user U --pass P] [scope] [--yes]
 //!
 //! scope: [--iface NAME]... [--range R]... [--driver ID]... [--secs N] [--demo] [--json] [--verbose]
 //! ```
@@ -18,6 +19,11 @@
 //! runs everything against the built-in simulator instead of the network.
 //! `catalog` prints the factory logins and firmware links Meerkat knows, and
 //! `scan` names the rows that apply to each camera; neither touches a camera.
+//! `install` asks a camera what firmware it runs and whether it takes a file
+//! (ONVIF's StartFirmwareUpgrade); given a file, it shows what it would send
+//! and sends it only with `--yes`, then waits for the camera and reads its
+//! version again. In `--demo`, the simulated AVer takes a text file of three
+//! lines: `MEERKAT-SIM-FIRMWARE`, `model=PTZ330UV`, `version=…`.
 
 use std::net::Ipv4Addr;
 use std::process::ExitCode;
@@ -25,8 +31,9 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use meerkat_core::driver::Level;
+use meerkat_core::http::Bytes;
 use meerkat_core::net::{in_subnet, mask_to_prefix, prefix_to_mask};
-use meerkat_core::{Camera, Catalog, Credentials, Engine, Event, Login, Mac, NetConfig, Reach, ScanRequest, Source, SourceKind};
+use meerkat_core::{Camera, Catalog, Credentials, Engine, Event, FirmwareFile, InstallStage, Login, Mac, NetConfig, Reach, ScanRequest, Source, SourceKind};
 
 const USAGE: &str = "usage:
   meerkat-cli ifaces
@@ -36,6 +43,7 @@ const USAGE: &str = "usage:
   meerkat-cli set   <camera> --ip A [--prefix N | --mask M] [--gw G] [--dns D]... [--name N] [--user U --pass P] [scope] [--yes]
   meerkat-cli set   <camera> --dhcp [--user U --pass P] [scope] [--yes]
   meerkat-cli web   <camera> [scope]
+  meerkat-cli install <camera> [<file>] [--user U --pass P] [scope] [--yes]
 
 scope: [--iface NAME]... [--range R]... [--driver ID]... [--secs N] [--demo] [--json] [--verbose]
 <camera>: a MAC address, an IP address, or an id from `scan --json`
@@ -45,6 +53,8 @@ ranges: 10.20.0.0/24, 10.20.0.10-60, 10.20.0.10-10.20.1.40 or one address";
 struct Args {
     cmd: String,
     target: Option<String>,
+    /// `install`'s firmware file.
+    file: Option<String>,
     ifaces: Vec<String>,
     ranges: Vec<String>,
     drivers: Vec<String>,
@@ -99,6 +109,7 @@ fn parse(argv: Vec<String>) -> Result<Args, String> {
             "-h" | "--help" => return Err(String::new()),
             s if s.starts_with('-') => return Err(format!("unknown option {s}")),
             s if a.target.is_none() => a.target = Some(s.to_string()),
+            s if a.cmd == "install" && a.file.is_none() => a.file = Some(s.to_string()),
             s => return Err(format!("unexpected argument {s}")),
         }
     }
@@ -152,6 +163,7 @@ async fn run(a: Args) -> Result<(), String> {
         }
         "set" => set(&engine, &a).await,
         "web" => web(&engine, &a).await,
+        "install" => install(&engine, &a).await,
         c => Err(format!("unknown command {c}\n\n{USAGE}")),
     }
 }
@@ -426,12 +438,7 @@ async fn set(engine: &Arc<Engine>, a: &Args) -> Result<(), String> {
         println!("Dry run — add --yes to send it.");
         return Ok(());
     }
-    let creds = match (&a.user, &a.pass) {
-        (Some(u), p) => Some(Credentials { username: u.clone(), password: p.clone().unwrap_or_default() }),
-        (None, Some(p)) => Some(Credentials { username: "admin".into(), password: p.clone() }),
-        _ => None,
-    };
-    let out = engine.write_network(&cam.id, cfg, creds).await?;
+    let out = engine.write_network(&cam.id, cfg, creds(a)).await?;
     println!("  {}", out.message);
     if out.restarts {
         println!("  the camera restarts its network; looking for it…");
@@ -439,6 +446,68 @@ async fn set(engine: &Arc<Engine>, a: &Args) -> Result<(), String> {
     match engine.verify(&cam.id, &out, Duration::from_millis(out.settle_ms) + Duration::from_secs(45), |_| {}).await? {
         Some(c) => println!("  back at {} [{}]", c.ip, reach_text(&c.reach)),
         None => println!("  not heard back yet — it may still be restarting, or now be on a subnet this computer cannot hear; scan again in a minute"),
+    }
+    Ok(())
+}
+
+/// `--user` and `--pass`; a password alone goes with `admin`.
+fn creds(a: &Args) -> Option<Credentials> {
+    match (&a.user, &a.pass) {
+        (Some(u), p) => Some(Credentials { username: u.clone(), password: p.clone().unwrap_or_default() }),
+        (None, Some(p)) => Some(Credentials { username: "admin".into(), password: p.clone() }),
+        _ => None,
+    }
+}
+
+fn size(bytes: u64) -> String {
+    match bytes {
+        b if b >= 1_000_000 => format!("{:.1} MB", b as f64 / 1e6),
+        b if b >= 1_000 => format!("{:.1} kB", b as f64 / 1e3),
+        b => format!("{b} bytes"),
+    }
+}
+
+fn stage_text(s: &InstallStage) -> String {
+    match s {
+        InstallStage::Preparing => "asking the camera to get ready".into(),
+        InstallStage::Pausing { secs } => format!("waiting {secs} s, as the camera asked"),
+        InstallStage::Sending { bytes } => format!("sending {}", size(*bytes)),
+        InstallStage::Installing { secs } => format!("the camera has it and is installing it; it expects to be away {secs} s"),
+        InstallStage::Looking => "looking for it…".into(),
+    }
+}
+
+async fn install(engine: &Arc<Engine>, a: &Args) -> Result<(), String> {
+    let target = a.target.as_deref().ok_or("install: which camera? Give its MAC or IP address")?;
+    let cams = scan(engine, a).await?;
+    let cam = find(&cams, target)?;
+    println!("{}", describe(&cam));
+    let check = engine.check_firmware(&cam.id, creds(a)).await?;
+    println!("  runs:  {}", check.version.as_deref().unwrap_or("(it did not say)"));
+    println!("  via:   {}", check.method);
+    if !check.accepts {
+        println!("  {}", check.note.as_deref().unwrap_or("it does not say it takes a file this way"));
+        return match a.file {
+            Some(_) => Err("nothing was sent".into()),
+            None => Ok(()),
+        };
+    }
+    println!("  it takes a firmware file this way");
+    let Some(path) = &a.file else { return Ok(()) };
+    let data = std::fs::read(path).map_err(|e| format!("{path}: {e}"))?;
+    println!("  file:  {path} ({})", size(data.len() as u64));
+    if !a.yes {
+        println!("Dry run — add --yes to send it. Meerkat cannot undo a firmware update; keep the camera powered until it is back.");
+        return Ok(());
+    }
+    let name = std::path::Path::new(path).file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| path.clone());
+    let report = engine.install_firmware(&cam.id, FirmwareFile { name, data: Bytes::from(data) }, creds(a), |st| println!("  {}", stage_text(&st)), |_| {}).await?;
+    println!("  {}", report.message);
+    match (report.back, report.before.as_deref(), report.after.as_deref()) {
+        (false, ..) => println!("  not back after {} s — it may still be installing: leave it powered, and scan again later", report.waited_secs),
+        (true, b, Some(now)) if b != Some(now) => println!("  back, running {now} (was {})", b.unwrap_or("?")),
+        (true, _, Some(now)) => println!("  back, but still running {now}: the file did not take"),
+        (true, _, None) => println!("  back; it did not say its version, so check its web UI"),
     }
     Ok(())
 }

@@ -838,3 +838,82 @@ dialog.reference p {
   font-weight: 600;
   margin-bottom: 4px;
 }
+
+/* ── Firmware install dialog ─────────────────────────────────────────────── */
+
+dialog.install {
+  width: min(620px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  padding: 16px 20px;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+dialog.install[open] {
+  display: flex;
+}
+dialog.install h2 {
+  font-size: 1.1rem;
+}
+dialog.install h3 {
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+dialog.install p {
+  margin: 0;
+}
+dialog.install section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+dialog.install .row.wrap {
+  align-items: flex-end;
+}
+dialog.install label:not(.check) {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+dialog.install .sha {
+  word-break: break-all;
+}
+label.check {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+label.check input {
+  margin-top: 0.2em;
+}
+ol.stages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 0.9rem;
+}
+ol.stages li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+ol.stages li.done .tick {
+  color: var(--ok);
+}
+ol.stages .tick {
+  width: 1.1em;
+  flex: none;
+  text-align: center;
+}
+.note.ok {
+  background: color-mix(in srgb, var(--ok) 12%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--ok) 35%, transparent);
+}
+.note p + p {
+  margin-top: 4px;
+}

@@ -40,6 +40,12 @@ export interface Reference {
   brand: string | null;
 }
 
+/** The firmware install dialog, open for one camera, with the login the detail panel had. */
+export interface InstallFor {
+  id: string;
+  creds: Credentials | null;
+}
+
 /** Where a change to one camera has got to. */
 export interface Job {
   state: 'sending' | 'waiting' | 'done' | 'failed';
@@ -70,6 +76,7 @@ interface State {
   recoveryFor: string | null;
   watch: Watch | null;
   reference: Reference | null;
+  installFor: InstallFor | null;
 
   init(): Promise<void>;
   scan(): Promise<void>;
@@ -94,6 +101,9 @@ interface State {
   removeAlias(alias: Alias | null): Promise<void>;
   openRecovery(driver: string | null): void;
   openReference(r: Reference | null): void;
+  openInstall(i: InstallFor | null): void;
+  /** Log how an install went and, when the camera said, the version it runs now. */
+  noteInstall(id: string, level: Level, text: string, version: string | null): void;
   startWatch(driver: string): Promise<void>;
   stopWatch(): Promise<void>;
 }
@@ -210,6 +220,7 @@ export const useStore = create<State>((set, get) => {
     recoveryFor: null,
     watch: null,
     reference: null,
+    installFor: null,
 
     async init() {
       const b = await api();
@@ -386,6 +397,16 @@ export const useStore = create<State>((set, get) => {
 
     openReference(reference) {
       set({ reference });
+    },
+
+    openInstall(installFor) {
+      set({ installFor });
+    },
+
+    noteInstall(id, level, text, version) {
+      const cam = get().cameras[id];
+      log(level, cam?.firmwareVia ?? 'firmware', `${cam?.name ?? cam?.model ?? id}: ${text}`);
+      if (version) set((s) => (s.cameras[id] ? { cameras: { ...s.cameras, [id]: { ...s.cameras[id], firmware: version } } } : {}));
     },
 
     async startWatch(driver) {

@@ -5,7 +5,8 @@ use std::net::Ipv4Addr;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use meerkat_core::{Camera, Credentials, Engine, Event, Mac, NetConfig, Reach, ScanRequest};
+use meerkat_core::http::Bytes;
+use meerkat_core::{Camera, Credentials, Engine, Event, FirmwareFile, InstallStage, Mac, NetConfig, Reach, ScanRequest};
 use meerkat_sim::{demo_cameras, Sim};
 
 async fn rig() -> (Sim, Engine) {
@@ -176,6 +177,97 @@ async fn onvif_needs_the_right_login() {
     assert!(out.restarts, "RebootNeeded → SystemReboot");
     let now = sim.snapshot().into_iter().find(|c| c.kind == meerkat_sim::Kind::Onvif).unwrap();
     assert_eq!((now.ip, now.gateway, now.reboots), (ip("192.168.10.41"), ip("192.168.10.254"), 1));
+}
+
+fn firmware(name: &str, data: Vec<u8>) -> FirmwareFile {
+    FirmwareFile { name: name.into(), data: Bytes::from(data) }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn onvif_firmware_installs_and_the_camera_comes_back_on_it() {
+    let (sim, engine) = rig().await;
+    let (cams, _) = scan(&engine).await;
+    let cam = cams.iter().find(|c| c.driver == "onvif").unwrap().clone();
+    assert_eq!(cam.firmware_via.as_deref(), Some("onvif"));
+    // A camera no firmware-capable driver has seen is not offered one.
+    let pana = by_mac(&cams, "00:80:45:1a:2b:02");
+    assert_eq!(pana.firmware_via, None);
+    let e = engine.check_firmware(&pana.id, None).await.unwrap_err();
+    assert!(e.contains("maker's steps"), "{e}");
+
+    // The check reads only, and needs the login.
+    let e = engine.check_firmware(&cam.id, None).await.unwrap_err();
+    assert!(e.contains("username and password"), "{e}");
+    let wrong = Credentials { username: "admin".into(), password: "nope".into() };
+    assert!(engine.check_firmware(&cam.id, Some(wrong.clone())).await.is_err());
+    let right = Credentials { username: "admin".into(), password: "admin".into() };
+    let check = engine.check_firmware(&cam.id, Some(right.clone())).await.expect("check");
+    assert!(check.accepts, "{check:?}");
+    assert_eq!((check.model.as_deref(), check.version.as_deref(), check.driver.as_str()), (Some("PTZ330UV"), Some("1.00"), "onvif"));
+
+    let none = |_: InstallStage| {};
+    // Refused before anything leaves: an empty file; a wrong login.
+    let e = engine.install_firmware(&cam.id, firmware("empty.bin", vec![]), Some(right.clone()), none, |_| {}).await.unwrap_err();
+    assert!(e.contains("empty"), "{e}");
+    let good = meerkat_sim::firmware_file("PTZ330UV", "1.10");
+    assert!(engine.install_firmware(&cam.id, firmware("fw.bin", good.clone()), Some(wrong), none, |_| {}).await.is_err());
+    // The camera refuses another model's image, as ONVIF says, with a 415.
+    let other = meerkat_sim::firmware_file("PTZ310", "9.99");
+    let e = engine.install_firmware(&cam.id, firmware("ptz310.bin", other), Some(right.clone()), none, |_| {}).await.unwrap_err();
+    assert!(e.contains("415"), "{e}");
+    let now = sim.snapshot().into_iter().find(|c| c.kind == meerkat_sim::Kind::Onvif).unwrap();
+    assert_eq!((now.firmware.as_str(), now.reboots), ("1.00", 0));
+
+    // The real thing, padded to a few MB so the body is not trivial.
+    let mut image = good;
+    image.resize(3 << 20, b'\n');
+    let stages = Arc::new(Mutex::new(Vec::new()));
+    let s = stages.clone();
+    let report = engine
+        .install_firmware(&cam.id, firmware("ptz330-1.10.bin", image), Some(right), move |st| s.lock().unwrap().push(st), |_| {})
+        .await
+        .expect("install");
+    assert!(report.back, "{report:?}");
+    assert_eq!((report.before.as_deref(), report.after.as_deref()), (Some("1.00"), Some("1.10")), "{report:?}");
+    assert_eq!(
+        *stages.lock().unwrap(),
+        vec![InstallStage::Preparing, InstallStage::Pausing { secs: 1 }, InstallStage::Sending { bytes: 3 << 20 }, InstallStage::Installing { secs: 2 }, InstallStage::Looking]
+    );
+    let now = sim.snapshot().into_iter().find(|c| c.kind == meerkat_sim::Kind::Onvif).unwrap();
+    assert_eq!((now.firmware.as_str(), now.reboots, now.ip), ("1.10", 1, ip("192.168.10.30")));
+    // Each file crossed once (the 415 one, then this): the login was learnt
+    // from a GET first, not from a POST of the whole file.
+    assert_eq!(now.firmware_posts, 2);
+    assert_eq!(engine.camera(&cam.id).unwrap().firmware.as_deref(), Some("1.10"));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn no_firmware_is_sent_to_a_camera_that_does_not_offer_it_or_cannot_be_reached() {
+    let mut cams = demo_cameras();
+    let aver = cams.iter_mut().find(|c| c.kind == meerkat_sim::Kind::Onvif).unwrap();
+    aver.http_firmware = false;
+    let sim = Sim::start(cams).await.unwrap();
+    let engine = Engine::sandboxed(meerkat_drivers::all(), meerkat_drivers::catalog(), sim.sandbox());
+    let (found, _) = scan(&engine).await;
+    let cam = found.iter().find(|c| c.driver == "onvif").unwrap().clone();
+    let right = Credentials { username: "admin".into(), password: "admin".into() };
+    let check = engine.check_firmware(&cam.id, Some(right.clone())).await.expect("check");
+    assert!(!check.accepts && check.note.as_deref().is_some_and(|n| n.contains("HttpFirmwareUpgrade")), "{check:?}");
+    let file = firmware("fw.bin", meerkat_sim::firmware_file("PTZ330UV", "1.10"));
+    let e = engine.install_firmware(&cam.id, file.clone(), Some(right.clone()), |_| {}, |_| {}).await.unwrap_err();
+    assert!(e.contains("HttpFirmwareUpgrade"), "{e}");
+    assert_eq!(sim.snapshot().into_iter().find(|c| c.kind == meerkat_sim::Kind::Onvif).unwrap().upgrade_token, None, "StartFirmwareUpgrade was never sent");
+
+    // An ONVIF camera heard on the wrong subnet: HTTP cannot reach it.
+    let mut cams = demo_cameras();
+    cams.iter_mut().find(|c| c.kind == meerkat_sim::Kind::Onvif).unwrap().ip = ip("192.168.0.30");
+    let sim = Sim::start(cams).await.unwrap();
+    let engine = Engine::sandboxed(meerkat_drivers::all(), meerkat_drivers::catalog(), sim.sandbox());
+    let (found, _) = scan(&engine).await;
+    let cam = found.iter().find(|c| c.driver == "onvif").unwrap().clone();
+    assert!(matches!(cam.reach, Reach::Mismatch { .. }), "{:?}", cam.reach);
+    let e = engine.install_firmware(&cam.id, file, Some(right), |_| {}, |_| {}).await.unwrap_err();
+    assert!(e.contains("outside"), "{e}");
 }
 
 #[tokio::test(flavor = "multi_thread")]

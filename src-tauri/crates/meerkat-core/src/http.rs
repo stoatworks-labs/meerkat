@@ -7,6 +7,7 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 use std::sync::Arc;
 use std::time::Duration;
 
+pub use bytes::Bytes;
 use md5::{Digest, Md5};
 use reqwest::header::{HeaderMap, AUTHORIZATION, CONTENT_TYPE, WWW_AUTHENTICATE};
 
@@ -89,12 +90,12 @@ impl Http {
     /// Send once; on a 401 with credentials in hand, answer the challenge and
     /// send again. Any status ≥ 400 after that is an error carrying the body.
     pub async fn send(&self, method: &str, url: &str, body: Option<(String, Vec<u8>)>, creds: Option<&Credentials>) -> Result<Resp, HttpError> {
-        let first = self.once(method, url, body.clone(), None).await?;
+        let body = body.map(|(ct, b)| (ct, Bytes::from(b)));
+        let first = self.once(method, url, body.clone(), None, None).await?;
         let resp = if first.status == 401 {
             let Some(c) = creds else { return Err(HttpError::Unauthorized) };
-            let challenge = first.headers.get_all(WWW_AUTHENTICATE).iter().filter_map(|v| v.to_str().ok()).map(str::to_string).collect::<Vec<_>>();
-            let auth = authorization(method, url, &challenge, c).ok_or(HttpError::Unauthorized)?;
-            let second = self.once(method, url, body, Some(auth)).await?;
+            let auth = authorization(method, url, &challenges(&first), c).ok_or(HttpError::Unauthorized)?;
+            let second = self.once(method, url, body, Some(auth), None).await?;
             if second.status == 401 {
                 return Err(HttpError::Unauthorized);
             }
@@ -102,18 +103,45 @@ impl Http {
         } else {
             first
         };
-        if resp.status >= 400 {
-            let mut b = resp.body.clone();
-            b.truncate(300);
-            return Err(HttpError::Status { status: resp.status, body: b });
-        }
-        Ok(resp)
+        checked(resp)
     }
 
-    async fn once(&self, method: &str, url: &str, body: Option<(String, Vec<u8>)>, auth: Option<String>) -> Result<Resp, HttpError> {
+    /// POST a big body — a firmware file — with a timeout of its own.
+    ///
+    /// The file should cross the wire once, so the login is not learnt the
+    /// usual way (send, get a 401, send again): a GET to the same URL first
+    /// fetches the challenge, which a GET cannot do any harm in asking for,
+    /// and the POST carries its answer. If the POST is challenged anyway (a
+    /// stale nonce), it is answered and sent once more.
+    pub async fn upload(&self, url: &str, content_type: &str, data: Bytes, creds: Option<&Credentials>, timeout: Duration) -> Result<Resp, HttpError> {
+        let mut auth = None;
+        if let Some(c) = creds {
+            if let Ok(r) = self.once("GET", url, None, None, None).await {
+                if r.status == 401 {
+                    auth = authorization("POST", url, &challenges(&r), c);
+                }
+            }
+        }
+        let body = Some((content_type.to_string(), data));
+        let mut resp = self.once("POST", url, body.clone(), auth, Some(timeout)).await?;
+        if resp.status == 401 {
+            let Some(c) = creds else { return Err(HttpError::Unauthorized) };
+            let auth = authorization("POST", url, &challenges(&resp), c).ok_or(HttpError::Unauthorized)?;
+            resp = self.once("POST", url, body, Some(auth), Some(timeout)).await?;
+            if resp.status == 401 {
+                return Err(HttpError::Unauthorized);
+            }
+        }
+        checked(resp)
+    }
+
+    async fn once(&self, method: &str, url: &str, body: Option<(String, Bytes)>, auth: Option<String>, timeout: Option<Duration>) -> Result<Resp, HttpError> {
         let m = reqwest::Method::from_bytes(method.as_bytes()).map_err(|e| HttpError::Transport(e.to_string()))?;
         let routed = self.url(url);
         let mut rb = self.client.request(m, &routed);
+        if let Some(t) = timeout {
+            rb = rb.timeout(t);
+        }
         if let Some(a) = auth {
             rb = rb.header(AUTHORIZATION, a);
         }
@@ -126,6 +154,20 @@ impl Http {
         let bytes = r.bytes().await.map_err(|e| HttpError::Transport(describe(&e)))?;
         Ok(Resp { status, headers, body: String::from_utf8_lossy(&bytes).into_owned() })
     }
+}
+
+fn challenges(r: &Resp) -> Vec<String> {
+    r.headers.get_all(WWW_AUTHENTICATE).iter().filter_map(|v| v.to_str().ok()).map(str::to_string).collect()
+}
+
+/// Any status ≥ 400 becomes an error carrying the start of the body.
+fn checked(resp: Resp) -> Result<Resp, HttpError> {
+    if resp.status >= 400 {
+        let mut b = resp.body.clone();
+        b.truncate(300);
+        return Err(HttpError::Status { status: resp.status, body: b });
+    }
+    Ok(resp)
 }
 
 fn describe(e: &reqwest::Error) -> String {

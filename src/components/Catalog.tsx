@@ -174,9 +174,9 @@ export function CameraLogins({ cam, onUse }: { cam: Camera; onUse?: (c: Credenti
   );
 }
 
-/** The detail panel's Firmware section. */
-export function CameraFirmware({ cam }: { cam: Camera }) {
-  const { catalog, openReference } = useStore();
+/** The detail panel's Firmware section. `creds`: the login typed in the detail panel, to start the install dialog with. */
+export function CameraFirmware({ cam, creds }: { cam: Camera; creds: Credentials | null }) {
+  const { catalog, openReference, openInstall } = useStore();
   const m = cam.catalog.firmware;
   const found = rows(catalog.firmware, m.ids);
   const brand = brandOf(cam, catalog);
@@ -188,9 +188,21 @@ export function CameraFirmware({ cam }: { cam: Camera }) {
         <span className="muted">{summary}</span>
       </summary>
       <p className="muted small">
-        {cam.firmware ? `This camera reports ${cam.firmware}. ` : ''}Meerkat does not supply or install firmware: get it from the maker, and
-        follow the maker's steps.
+        {cam.firmware ? `This camera reports ${cam.firmware}. ` : ''}
+        {cam.firmwareVia
+          ? "Meerkat does not supply firmware: get it from the maker. This camera answered ONVIF, so Meerkat can send it a file you downloaded, if it says it takes one."
+          : "Meerkat does not supply firmware: get it from the maker, and follow the maker's steps."}
       </p>
+      {cam.firmwareVia && (
+        <button
+          type="button"
+          disabled={cam.reach.kind === 'mismatch'}
+          title={cam.reach.kind === 'mismatch' ? 'A firmware file goes over HTTP, which cannot reach a camera on another subnet' : undefined}
+          onClick={() => openInstall({ id: cam.id, creds })}
+        >
+          Install a firmware file…
+        </button>
+      )}
       {!found.length ? (
         <p className="small">Meerkat has no firmware page on record for {cam.vendor} cameras.</p>
       ) : m.exact ? (
@@ -280,7 +292,7 @@ export function ReferenceDialog() {
           <p className="muted small">
             {tab === 'logins'
               ? "From each maker's own documents, with the place each was read. Meerkat never tries these on a camera."
-              : "Links to each maker's own page. Meerkat does not supply, download or install firmware."}
+              : "Links to each maker's own page. Meerkat does not supply or download firmware; it can send a file you downloaded to a camera that takes one over ONVIF."}
           </p>
           <div className="ref-list">
             {byBrand.length === 0 && <p className="muted">Nothing matches.</p>}

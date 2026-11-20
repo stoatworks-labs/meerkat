@@ -9,22 +9,50 @@
 //! (`meerkat-sim`): eight pretend cameras on loopback, every protocol answered,
 //! nothing sent to the network. Start with `MEERKAT_DEMO=1` or `--demo`, or
 //! flip it from the sidebar.
+//!
+//! A firmware install streams `meerkat://install` events (`{ id, stage }`)
+//! while it runs. The file itself crosses the IPC boundary once, as the raw
+//! body of `firmware_stage`, and waits here until `firmware_install` takes it.
 
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use meerkat_core::{Alias, Camera, Catalog, Credentials, DriverInfo, Engine, Event, LocalIface, NetConfig, ScanRequest, ScanSummary, WriteOutcome};
+use meerkat_core::driver::MAX_FIRMWARE;
+use meerkat_core::http::Bytes;
+use meerkat_core::{Alias, Camera, Catalog, Credentials, DriverInfo, Engine, Event, FirmwareCheck, FirmwareFile, InstallReport, InstallStage, LocalIface, NetConfig, ScanRequest, ScanSummary, WriteOutcome};
 use serde::Serialize;
+use tauri::ipc::{InvokeBody, Request};
 use tauri::{AppHandle, Builder, Emitter, Manager, RunEvent, Runtime, State};
 use tauri_plugin_opener::OpenerExt;
 
 const EVENT: &str = "meerkat://event";
+const INSTALL: &str = "meerkat://install";
 
 struct AppState {
     engine: Mutex<Arc<Engine>>,
     /// The simulator behind the engine in demo mode; dropped (and stopped)
     /// when demo mode is switched off.
     sim: Mutex<Option<meerkat_sim::Sim>>,
+    /// The firmware file the webview sent last, until an install takes it.
+    staged: Mutex<Option<Staged>>,
+}
+
+struct Staged {
+    token: String,
+    data: Bytes,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct StagedFile {
+    token: String,
+    size: usize,
+}
+
+#[derive(Clone, Serialize)]
+struct InstallEvent {
+    id: String,
+    stage: InstallStage,
 }
 
 impl AppState {
@@ -154,6 +182,64 @@ async fn verify<R: Runtime>(app: AppHandle<R>, state: State<'_, AppState>, id: S
         .await
 }
 
+/// Ask a camera what firmware it runs and whether it takes a file over the
+/// protocol that would send it. Reads only.
+#[tauri::command]
+async fn firmware_check(state: State<'_, AppState>, id: String, creds: Option<Credentials>) -> Result<FirmwareCheck, String> {
+    state.engine().check_firmware(&id, creds).await
+}
+
+/// Hold a firmware file the user chose — the request body is its bytes —
+/// until `firmware_install` takes it. One at a time: a second replaces the
+/// first.
+#[tauri::command]
+fn firmware_stage(state: State<AppState>, request: Request<'_>) -> Result<StagedFile, String> {
+    let InvokeBody::Raw(data) = request.body() else { return Err("the file has to come as the request's raw body".into()) };
+    if data.is_empty() {
+        return Err("that file is empty".into());
+    }
+    if data.len() > MAX_FIRMWARE {
+        return Err(format!("that file is {} MB; Meerkat sends files up to {} MB", data.len() >> 20, MAX_FIRMWARE >> 20));
+    }
+    let token = format!("{:x}", SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0));
+    *state.staged.lock().unwrap() = Some(Staged { token: token.clone(), data: Bytes::from(data.clone()) });
+    Ok(StagedFile { token, size: data.len() })
+}
+
+/// Send the held file to one camera and wait for it to come back. Progress
+/// arrives as `meerkat://install` events; the camera, once it answers, as a
+/// `meerkat://event` like any other. `name` is the file's, for messages.
+#[tauri::command]
+async fn firmware_install<R: Runtime>(app: AppHandle<R>, state: State<'_, AppState>, id: String, token: String, name: String, creds: Option<Credentials>) -> Result<InstallReport, String> {
+    let file = {
+        let mut held = state.staged.lock().unwrap();
+        match held.take() {
+            Some(f) if f.token == token => FirmwareFile { name, data: f.data },
+            other => {
+                *held = other;
+                return Err("that file is no longer held; choose it again".into());
+            }
+        }
+    };
+    let (a, who) = (app.clone(), id.clone());
+    state
+        .engine()
+        .install_firmware(
+            &id,
+            file,
+            creds,
+            move |stage| {
+                let _ = a.emit(INSTALL, InstallEvent { id: who.clone(), stage });
+            },
+            move |e: Event| {
+                if matches!(e, Event::Camera { .. }) {
+                    let _ = app.emit(EVENT, &e);
+                }
+            },
+        )
+        .await
+}
+
 /// Open a camera's own web interface in the system browser. Returns the URL
 /// opened (in demo mode, the simulator's page on loopback).
 ///
@@ -241,7 +327,7 @@ pub fn run() {
     } else {
         (Engine::new(meerkat_drivers::all(), meerkat_drivers::catalog()), None)
     };
-    app(tauri::Builder::default(), AppState { engine: Mutex::new(Arc::new(engine)), sim: Mutex::new(sim) })
+    app(tauri::Builder::default(), AppState { engine: Mutex::new(Arc::new(engine)), sim: Mutex::new(sim), staged: Mutex::new(None) })
         .build(tauri::generate_context!())
         .expect("error while starting Meerkat")
         .run(|app, event| {
@@ -275,6 +361,9 @@ fn app<R: Runtime>(builder: Builder<R>, state: AppState) -> Builder<R> {
         read_network,
         write_network,
         verify,
+        firmware_check,
+        firmware_stage,
+        firmware_install,
         open_web_ui,
         aliases,
         plan_alias,
@@ -299,6 +388,10 @@ mod tests {
     use super::*;
 
     fn call(w: &WebviewWindow<MockRuntime>, cmd: &str, args: Value) -> Result<Value, Value> {
+        invoke(w, cmd, InvokeBody::Json(args))
+    }
+
+    fn invoke(w: &WebviewWindow<MockRuntime>, cmd: &str, body: InvokeBody) -> Result<Value, Value> {
         get_ipc_response(
             w,
             InvokeRequest {
@@ -306,7 +399,7 @@ mod tests {
                 callback: CallbackFn(0),
                 error: CallbackFn(1),
                 url: "tauri://localhost".parse().unwrap(),
-                body: InvokeBody::Json(args),
+                body,
                 headers: Default::default(),
                 invoke_key: INVOKE_KEY.to_string(),
             },
@@ -318,7 +411,7 @@ mod tests {
     fn the_ui_commands_scan_readdress_and_verify_in_demo_mode() {
         let sim = tauri::async_runtime::block_on(meerkat_sim::Sim::start(meerkat_sim::demo_cameras())).expect("simulator");
         let engine = Engine::sandboxed(meerkat_drivers::all(), meerkat_drivers::catalog(), sim.sandbox());
-        let state = AppState { engine: Mutex::new(Arc::new(engine)), sim: Mutex::new(Some(sim)) };
+        let state = AppState { engine: Mutex::new(Arc::new(engine)), sim: Mutex::new(Some(sim)), staged: Mutex::new(None) };
         let app = app(mock_builder(), state).build(mock_context(noop_assets())).expect("app");
         let w = WebviewWindowBuilder::new(&app, "main", Default::default()).build().expect("window");
 
@@ -394,6 +487,33 @@ mod tests {
         let now = call(&w, "remove_aliases", json!({ "only": [alias] })).expect("remove");
         assert_eq!(now.as_array().unwrap().iter().find(|c| c["id"] == q["id"]).unwrap()["reach"]["kind"], "mismatch");
         assert_eq!(call(&w, "aliases", json!({})).unwrap(), json!([]));
+
+        // Firmware, the way the install dialog sends it: check, stage the
+        // bytes, install with the token, progress as events.
+        let stages = Arc::new(Mutex::new(Vec::<Value>::new()));
+        let st = stages.clone();
+        app.listen(INSTALL, move |e| st.lock().unwrap().push(serde_json::from_str(e.payload()).unwrap()));
+        let aver = cams.iter().find(|c| c["driver"] == "onvif").expect("ONVIF camera");
+        assert_eq!(aver["firmwareVia"], "onvif", "{aver}");
+        assert_eq!(cams.iter().filter(|c| !c["firmwareVia"].is_null()).count(), 1);
+        let login = json!({ "username": "admin", "password": "admin" });
+        let check = call(&w, "firmware_check", json!({ "id": aver["id"], "creds": login })).expect("check");
+        assert_eq!((&check["accepts"], &check["version"], &check["driver"]), (&json!(true), &json!("1.00"), &json!("onvif")), "{check}");
+        let e = invoke(&w, "firmware_stage", InvokeBody::Json(json!({}))).unwrap_err();
+        assert!(e.as_str().is_some_and(|s| s.contains("raw body")), "{e}");
+        let image = meerkat_sim::firmware_file("PTZ330UV", "1.10");
+        let held = invoke(&w, "firmware_stage", InvokeBody::Raw(image.clone())).expect("stage");
+        assert_eq!(held["size"], image.len(), "{held}");
+        let e = call(&w, "firmware_install", json!({ "id": aver["id"], "token": "nope", "name": "fw.bin", "creds": login })).unwrap_err();
+        assert!(e.as_str().is_some_and(|s| s.contains("no longer held")), "{e}");
+        let report = call(&w, "firmware_install", json!({ "id": aver["id"], "token": held["token"], "name": "fw.bin", "creds": login })).expect("install");
+        assert_eq!((&report["before"], &report["after"], &report["back"]), (&json!("1.00"), &json!("1.10"), &json!(true)), "{report}");
+        let kinds: Vec<Value> = stages.lock().unwrap().iter().map(|e| e["stage"]["kind"].clone()).collect();
+        assert_eq!(kinds, ["preparing", "pausing", "sending", "installing", "looking"].map(Value::from), "{:?}", stages.lock().unwrap());
+        assert!(stages.lock().unwrap().iter().all(|e| e["id"] == aver["id"]));
+        // The file is taken by the install: it cannot be sent twice.
+        let e = call(&w, "firmware_install", json!({ "id": aver["id"], "token": held["token"], "name": "fw.bin", "creds": login })).unwrap_err();
+        assert!(e.as_str().is_some_and(|s| s.contains("no longer held")), "{e}");
 
         // The table can be cleared once the scan is over.
         call(&w, "clear", json!({})).unwrap();

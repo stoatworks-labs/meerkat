@@ -134,8 +134,25 @@ maker's firmware download page, with the maker's update steps and warnings. Both
 makers' own documents, and every fact links to its source. It covers Panasonic, Sony, BirdDog,
 PTZOptics, Canon, Lumens, AVer, Marshall, JVC, Vaddio, Datavideo, Avonic, Bolin, Zowietek and
 Telycam. **Meerkat never tries a login by itself** (some cameras lock an address out after a few
-wrong passwords), and it does not supply or install firmware. The sidebar's **Factory logins…**
+wrong passwords), and it does not supply or download firmware. The sidebar's **Factory logins…**
 and **Firmware downloads…** list every brand.
+
+### Installing a firmware file
+
+A camera that answers ONVIF and says it takes a firmware file over HTTP can be sent one from
+Meerkat: **Install a firmware file…** under the camera's firmware section. You download the file
+from the maker's page yourself; Meerkat then
+
+1. asks the camera, with its administrator login, what it runs and whether it takes a file
+   (ONVIF's `HttpFirmwareUpgrade` capability);
+2. shows the file's size and SHA-256 next to the maker's warnings, and waits for you to tick
+   that this file is that maker's firmware for that model;
+3. sends it the way the ONVIF Core specification publishes (`StartFirmwareUpgrade`, §8.3.9: an
+   HTTP POST to the address the camera gives, always at the camera's own IP), waits out the time
+   the camera says it will be away, finds it again and reads its version.
+
+Only that version says the install took. Under ONVIF the camera keeps its address and logins.
+Brands whose upload is not ONVIF (Sony's, AVer's, Panasonic's) keep the maker's steps and a link.
 
 ## Demo mode
 
@@ -158,11 +175,13 @@ cargo run -p meerkat-cli -- set <camera> --ip 192.168.10.21 --prefix 24 --gw 192
 cargo run -p meerkat-cli -- set <camera> --ip 192.168.10.21 --prefix 24 --gw 192.168.10.1 --yes  # do it
 cargo run -p meerkat-cli -- web <camera>
 cargo run -p meerkat-cli -- catalog sony                # factory logins and firmware pages
+cargo run -p meerkat-cli -- install <camera> --user admin --pass …         # what it runs, and does it take a file
+cargo run -p meerkat-cli -- install <camera> fw.bin --user admin --pass …  # dry run
 cargo run -p meerkat-cli -- scan --demo --json         # against the simulator
 ```
 
-`<camera>` is a MAC, an IP or a row id from the scan. `set` prints the current and new settings
-and does nothing without `--yes`.
+`<camera>` is a MAC, an IP or a row id from the scan. `set` and `install` print what they would
+do and do nothing without `--yes`.
 
 ## Building
 
@@ -200,6 +219,8 @@ v0.1.0 is the first tagged build: a beta.
 - **PTZOptics / VHD:** discovery only. The platform's set command is not verified.
 - **Factory logins and firmware pages** are read from the makers' documents, not from
   cameras. A row marked *excerpt only* or *not the maker* is weaker.
+- **Firmware install** is written from the ONVIF Core specification and tested against the
+  simulator only. No real camera has been sent a file yet.
 - **Temporary addresses** are tested against the simulator. The system commands that add and
   remove them (`ifconfig … alias` through an administrator prompt on macOS, `ip addr` through
   `pkexec` on Linux, `New-NetIPAddress` through an elevated PowerShell on Windows) are checked as

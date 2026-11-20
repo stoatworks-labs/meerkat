@@ -112,6 +112,7 @@ impl Driver for BirdDog {
                 "Out of the box a BirdDog uses DHCP and falls back to 192.168.100.100/24 after about 30 seconds without a lease.",
                 "The camera reboots to apply a new address; Meerkat waits for it to come back.",
             ],
+            firmware: None,
             enabled_by_default: true,
             recovery: Some(Recovery {
                 tool: "BirdDog Neuralyzer",

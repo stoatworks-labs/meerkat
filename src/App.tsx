@@ -4,6 +4,7 @@ import { BulkDialog } from './components/BulkDialog';
 import { ReferenceDialog } from './components/Catalog';
 import { CameraTable, useVisibleCameras } from './components/CameraTable';
 import { Detail } from './components/Detail';
+import { InstallDialog } from './components/InstallDialog';
 import { LogPanel } from './components/LogPanel';
 import { RecoveryDialog } from './components/RecoveryDialog';
 import { Sidebar } from './components/Sidebar';
@@ -108,6 +109,7 @@ export function App() {
       <BulkDialog open={bulk} onClose={() => setBulk(false)} />
       <RecoveryDialog />
       <ReferenceDialog />
+      <InstallDialog />
     </div>
   );
 }

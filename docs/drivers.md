@@ -22,6 +22,9 @@ pub trait Driver: Send + Sync + 'static {
     async fn read_network(&self, op: &OpCtx, cam: &Camera) -> Result<NetConfig>;
     async fn write_network(&self, op: &OpCtx, cam: &Camera, cfg: &NetConfig) -> Result<WriteOutcome>;
     fn web_url(&self, cam: &Camera) -> Option<String>;                             // default: http://ip[:web_port]/
+    async fn check_firmware(&self, op: &OpCtx, cam: &Camera) -> Result<FirmwareCheck>;      // default: Unsupported
+    async fn install_firmware(&self, op: &OpCtx, cam: &Camera, file: &FirmwareFile,
+                              stage: &(dyn Fn(InstallStage) + Send + Sync)) -> Result<WriteOutcome>;  // default: Unsupported
 }
 ```
 
@@ -38,6 +41,7 @@ get a web UI link.
 | `discovery`, `sweep` | One line each, for the driver list: how it finds cameras, and how it probes one address (or `None`). |
 | `notes` | The limits a user needs to know before pressing Apply. Write them as plain sentences. |
 | `enabled_by_default` | Off for anything slow or noisy. |
+| `firmware` | How the driver sends a firmware file, in one line, or `None`. Set it only with `check_firmware` and `install_firmware`, for a published upload: see below. |
 | `recovery` | The vendor's own tool for a camera nothing can reach, such as one given a bad address (BirdDog's Neuralyzer), or `None`. It holds the tool's name and download URL, the models it covers, what it does, the steps, what the camera does afterwards, and the `fallback` address it comes back on, which the watch probes as well. The UI links to the tool and then watches for the camera. |
 
 ### Discovery: `discover(ctx)`
@@ -106,6 +110,28 @@ is not being asked to reach a camera on the wrong subnet. What is left for the d
 Never send a write you cannot vouch for. If two dialects exist and neither is confirmed (the
 VHD platform), make the driver discovery-only and say so in `notes`.
 
+### Firmware: `check_firmware` / `install_firmware`
+
+Only for an upload the brand **publishes**: ONVIF's `StartFirmwareUpgrade` (Core §8.3.9) is the
+one implemented. A driver that sets `info().firmware` can send a file to any camera it has seen,
+even one another driver owns: the engine records the driver in `Camera::firmware_via`.
+
+- `check_firmware` reads only. Return the camera's maker, model and version, and `accepts:
+  true` only when the camera itself says it takes a file this way (ONVIF's
+  `HttpFirmwareUpgrade` capability). Otherwise `accepts: false` and a `note` that says why.
+- `install_firmware` is called after the engine has checked that no scan is running, that the
+  file is neither empty nor over 1 GiB, that the camera is not on the wrong subnet, and that
+  `check_firmware` accepts. Call `stage` as each step starts (`Pausing`, `Sending`), send the
+  file **to `cam.ip` only**, whatever host the camera names, and return a `WriteOutcome` with
+  `restarts: true`, `expect_ip: Some(cam.ip)` and `settle_ms` set to the time the camera says
+  it will be away. The engine waits it out, rediscovers the camera and calls `check_firmware`
+  again: only that version says the install took.
+- Map the camera's refusals to messages a user can act on: HTTP 415 is a file the camera does
+  not take, 401 is the login. A connection that drops after the file has gone may mean the
+  camera is already restarting: say so rather than call it a failure.
+- Send it with `op.http.upload`, which takes the digest challenge with a GET first, so a large
+  file crosses the network once, and gives the POST a timeout that grows with the file.
+
 ## Factory logins and firmware pages
 
 What a brand's cameras log in with out of the box, and where its maker publishes firmware, are
@@ -141,7 +167,8 @@ The rules for a row:
 - **A firmware row links the maker's page.** Never a file, and never a mirror. `how` and
   `warnings` repeat the maker's steps. `web_path` is the camera's own firmware page, only when
   the maker's procedure shows its address. The app opens it only if a row names it. `upload`
-  records a published network upload, for information: Meerkat does not upload firmware.
+  records a published network upload, for information: the catalogue never sends a file. A
+  driver's `install_firmware` does, and only over a protocol it implements and tests.
 
 `cargo test -p meerkat-drivers` checks every row is sourced and well formed. Add your models to
 the tests that check each camera finds its own row.
@@ -163,6 +190,10 @@ End to end, add the brand to the simulator in `src-tauri/crates/meerkat-sim/src/
    port there, wherever it has been moved to.
 4. A test in `tests/e2e.rs`: the scan finds it with the right reach and caps, a write lands and
    `verify` finds it at its new address in the same row, and each refusal says why.
+5. For a firmware upload, have the simulated camera take the simulator's own image (`firmware_file(model,
+   version)`: three text lines, `MEERKAT-SIM-FIRMWARE`, `model=…`, `version=…`), refuse one for
+   another model, drop off the network for the time it said, and come back on the new version.
+   `onvif_upload` in the simulator is the example, with HTTP digest on the upload.
 
 `cargo test --workspace` runs the lot, including the desktop app's command layer
 (`src-tauri/src/lib.rs`, on Tauri's mock runtime). `npm run app:demo` shows the new brand in the
@@ -171,4 +202,6 @@ window, against the simulator only.
 ## Before it touches a real camera
 
 Read first, then write. Run a scan and check the row, then `meerkat-cli set … ` without `--yes`
-(a dry run), and only then the write, on a camera that nobody is using.
+(a dry run), and only then the write, on a camera that nobody is using. A firmware upload is the
+same: `meerkat-cli install <camera>` alone asks, with a file and no `--yes` it is a dry run, and
+it goes to a bench camera with the maker's file, never one in use.

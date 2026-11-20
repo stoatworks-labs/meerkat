@@ -10,7 +10,10 @@
 //!   are swept); `sweep` defaults to probing each address with bounded
 //!   concurrency, and a UDP driver can override it to blast the whole range;
 //! - **read_network / write_network** — the IP settings;
-//! - **web_url** — where the camera's own web UI is.
+//! - **web_url** — where the camera's own web UI is;
+//! - **check_firmware / install_firmware** — send a firmware file the user
+//!   chose, for a protocol that publishes how (ONVIF's StartFirmwareUpgrade).
+//!   A driver that does says so in [`DriverInfo::firmware`].
 //!
 //! Drivers never talk to the UI or to each other. They report cameras and log
 //! lines through the context, and the engine merges and forwards them. To add
@@ -73,6 +76,10 @@ pub struct DriverInfo {
     /// The vendor's own tool for a camera nothing else can reach, if there is
     /// one.
     pub recovery: Option<Recovery>,
+    /// How it installs a firmware file, when it can: one line for the UI.
+    /// The engine offers an install through the driver that owns the camera,
+    /// or through any other that has seen it and says so here.
+    pub firmware: Option<&'static str>,
 }
 
 /// A vendor's tool for getting a camera back when nothing can reach it — a
@@ -286,6 +293,53 @@ pub struct WriteOutcome {
     pub settle_ms: u64,
 }
 
+/// What a camera says about itself before a firmware file is sent to it.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FirmwareCheck {
+    /// The driver that would send the file.
+    pub driver: String,
+    /// How, as the protocol's own documents name it.
+    pub method: String,
+    pub manufacturer: Option<String>,
+    pub model: Option<String>,
+    /// The version it runs now.
+    pub version: Option<String>,
+    /// It says it accepts a file this way.
+    pub accepts: bool,
+    /// Why not, in a sentence, when it does not.
+    pub note: Option<String>,
+}
+
+/// A firmware file the user chose, whole, as it will be sent. Meerkat cannot
+/// tell a good image from a bad one; the camera checks it.
+#[derive(Clone)]
+pub struct FirmwareFile {
+    pub name: String,
+    pub data: crate::http::Bytes,
+}
+
+/// The largest file Meerkat will send. Camera firmware runs from a few MB to
+/// a few hundred.
+pub const MAX_FIRMWARE: usize = 1 << 30;
+
+/// Where an install has got to, for the UI.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
+pub enum InstallStage {
+    /// Reading the camera's version and asking it to get ready.
+    Preparing,
+    /// The camera asked for a pause before the upload.
+    Pausing { secs: u64 },
+    /// Sending the file.
+    Sending { bytes: u64 },
+    /// The camera has the file and is installing it; it said how long it
+    /// expects to be away.
+    Installing { secs: u64 },
+    /// Looking for the camera again.
+    Looking,
+}
+
 #[async_trait]
 pub trait Driver: Send + Sync + 'static {
     fn info(&self) -> DriverInfo;
@@ -331,6 +385,22 @@ pub trait Driver: Send + Sync + 'static {
 
     async fn write_network(&self, _op: &OpCtx, _cam: &Camera, _cfg: &NetConfig) -> Result<WriteOutcome> {
         Err(DriverError::Unsupported("change network settings"))
+    }
+
+    /// Read what the camera says about installing firmware: its version,
+    /// and whether it accepts a file the way this driver sends one. Reads
+    /// only.
+    async fn check_firmware(&self, _op: &OpCtx, _cam: &Camera) -> Result<FirmwareCheck> {
+        Err(DriverError::Unsupported("install firmware"))
+    }
+
+    /// Send `file` and return once the camera has it. The outcome says where
+    /// to look for the camera and how long it expects to be away; the engine
+    /// waits, finds it, and reads its version again. Report progress through
+    /// `stage`. Never called without the user's say-so, for this camera and
+    /// this file.
+    async fn install_firmware(&self, _op: &OpCtx, _cam: &Camera, _file: &FirmwareFile, _stage: &(dyn Fn(InstallStage) + Send + Sync)) -> Result<WriteOutcome> {
+        Err(DriverError::Unsupported("install firmware"))
     }
 
     /// The built-in web UI. The default is `http://<ip>:<web_port or 80>/`.

@@ -16,7 +16,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::alias::{self, Alias, AliasBackend, NoAliases, SystemAliases};
 use crate::catalog::Catalog;
-use crate::driver::{Driver, DriverInfo, Leg, Level, Msg, OpCtx, PortMap, ScanCtx, WriteOutcome};
+use crate::driver::{Driver, DriverInfo, FirmwareCheck, FirmwareFile, InstallStage, Leg, Level, Msg, OpCtx, PortMap, ScanCtx, WriteOutcome, MAX_FIRMWARE};
 use crate::http::{Http, Route};
 use crate::model::{Camera, Credentials, Method, NetConfig, Reach};
 use crate::net::{self, LocalIface, Range};
@@ -61,6 +61,23 @@ impl Default for ScanRequest {
             max_hosts: 4096,
         }
     }
+}
+
+/// What a firmware install ended with.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InstallReport {
+    /// What the camera said on taking the file.
+    pub message: String,
+    /// The version it ran before, in its own words.
+    pub before: Option<String>,
+    /// The version it reports now. None when it has not come back, or came
+    /// back and did not say: then only the camera's web UI can tell.
+    pub after: Option<String>,
+    /// It answered again within the wait.
+    pub back: bool,
+    /// How long Meerkat looked for it.
+    pub waited_secs: u64,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -531,12 +548,14 @@ impl Engine {
         // The vendor and model may only now be known (ONVIF names a camera
         // NDI found first), so this is worked out again on every sighting.
         merged.catalog = self.catalog.about(&merged);
+        merged.firmware_via = self.firmware_driver(&merged).map(|d| d.info().id.to_string());
         {
             let mut reg = self.registry.lock().unwrap();
             if let Some(c) = reg_get_mut(&mut reg, &merged.id) {
                 c.reach = merged.reach.clone();
                 c.web_url = merged.web_url.clone();
                 c.catalog = merged.catalog.clone();
+                c.firmware_via = merged.firmware_via.clone();
             }
         }
         Event::Camera { camera: Box::new(merged), replaces: up.replaces }
@@ -600,6 +619,94 @@ impl Engine {
         }
         let op = self.op_ctx(&cam, creds, d.info().id);
         d.write_network(&op, &cam, &cfg).await.map_err(|e| e.to_string())
+    }
+
+    /// The driver to send a firmware file through: the camera's own when it
+    /// can, else another that has seen the camera and can (ONVIF, for a
+    /// Panasonic that answered WS-Discovery too).
+    fn firmware_driver(&self, cam: &Camera) -> Option<Arc<dyn Driver>> {
+        std::iter::once(cam.driver.as_str())
+            .chain(cam.seen.iter().map(|s| s.driver.as_str()))
+            .filter_map(|id| self.driver(id))
+            .find(|d| d.info().firmware.is_some())
+    }
+
+    fn firmware_target(&self, id: &str) -> Result<(Camera, Arc<dyn Driver>), String> {
+        let cam = self.camera(id).ok_or("that camera is no longer in the list; scan again")?;
+        let d = self.firmware_driver(&cam).ok_or("no driver here can send this camera a firmware file; follow its maker's steps")?;
+        if let Reach::Mismatch { iface } = &cam.reach {
+            return Err(format!(
+                "{} is outside {iface}'s subnet, and a firmware file goes over HTTP, which cannot reach it — add a temporary address on {iface}, or put this computer on the camera's subnet",
+                cam.ip
+            ));
+        }
+        Ok((cam, d))
+    }
+
+    fn note_firmware(&self, id: &str, version: &Option<String>) {
+        if let (Some(v), Some(c)) = (version, reg_get_mut(&mut self.registry.lock().unwrap(), id)) {
+            c.firmware = Some(v.clone());
+        }
+    }
+
+    /// Ask a camera what it runs and whether it accepts a firmware file.
+    /// Reads only: nothing is sent but the login.
+    pub async fn check_firmware(&self, id: &str, creds: Option<Credentials>) -> Result<FirmwareCheck, String> {
+        let (cam, d) = self.firmware_target(id)?;
+        let op = self.op_ctx(&cam, creds, d.info().id);
+        let check = d.check_firmware(&op, &cam).await.map_err(|e| e.to_string())?;
+        self.note_firmware(id, &check.version);
+        Ok(check)
+    }
+
+    /// Send a firmware file the user chose to one camera, wait out the time
+    /// it said it would be away, find it again, and read its version.
+    ///
+    /// Only the version it reports afterwards says the install took: a
+    /// camera can take a file, restart, and come back on the old firmware.
+    pub async fn install_firmware(
+        &self,
+        id: &str,
+        file: FirmwareFile,
+        creds: Option<Credentials>,
+        stage: impl Fn(InstallStage) + Send + Sync,
+        emit: impl Fn(Event) + Send + Sync,
+    ) -> Result<InstallReport, String> {
+        if self.is_running() {
+            return Err("stop the scan first".into());
+        }
+        if file.data.is_empty() {
+            return Err(format!("{} is empty", file.name));
+        }
+        if file.data.len() > MAX_FIRMWARE {
+            return Err(format!("{} is {} MB; Meerkat sends files up to {} MB", file.name, file.data.len() >> 20, MAX_FIRMWARE >> 20));
+        }
+        let (cam, d) = self.firmware_target(id)?;
+        stage(InstallStage::Preparing);
+        let op = self.op_ctx(&cam, creds.clone(), d.info().id);
+        let check = d.check_firmware(&op, &cam).await.map_err(|e| e.to_string())?;
+        if !check.accepts {
+            return Err(check.note.unwrap_or_else(|| "the camera does not say it accepts a firmware file this way".into()));
+        }
+        let out = d.install_firmware(&op, &cam, &file, &stage).await.map_err(|e| e.to_string())?;
+        stage(InstallStage::Installing { secs: out.settle_ms.div_ceil(1000) });
+        tokio::time::sleep(Duration::from_millis(out.settle_ms)).await;
+        stage(InstallStage::Looking);
+        // Installs overrun their own estimates: look for three times as long,
+        // and at least five minutes.
+        let wait = (Duration::from_millis(out.settle_ms) * 3).clamp(Duration::from_secs(300), Duration::from_secs(1800));
+        let started = Instant::now();
+        let back = self.verify(id, &WriteOutcome { settle_ms: 0, ..out.clone() }, wait, emit).await?;
+        let waited_secs = started.elapsed().as_secs();
+        let mut after = None;
+        if let Some(b) = &back {
+            // An install keeps the logins (ONVIF Core §8.3.9), so the same one reads it.
+            if let Ok(c) = d.check_firmware(&self.op_ctx(b, creds, d.info().id), b).await {
+                after = c.version;
+            }
+            self.note_firmware(&b.id, &after);
+        }
+        Ok(InstallReport { message: out.message, before: check.version, after, back: back.is_some(), waited_secs })
     }
 
     /// Look for a camera after a write: rediscover with its driver (and probe

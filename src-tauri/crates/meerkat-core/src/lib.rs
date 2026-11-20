@@ -31,7 +31,7 @@ pub mod registry;
 
 pub use alias::Alias;
 pub use catalog::{Catalog, CatalogMatch, FirmwareEntry, Login, LoginEntry, Matched, Source, SourceKind};
-pub use driver::{Driver, DriverError, DriverInfo, OpCtx, Recovery, ScanCtx, WriteOutcome};
-pub use engine::{Engine, Event, Sandbox, ScanRequest, ScanSummary};
+pub use driver::{Driver, DriverError, DriverInfo, FirmwareCheck, FirmwareFile, InstallStage, OpCtx, Recovery, ScanCtx, WriteOutcome};
+pub use engine::{Engine, Event, InstallReport, Sandbox, ScanRequest, ScanSummary};
 pub use model::{Caps, Camera, Credentials, Mac, Method, NetConfig, Reach, Sighting};
 pub use net::LocalIface;

@@ -155,6 +155,7 @@ impl Driver for Sony {
                 "Switching a camera to DHCP is not possible this way; use its web UI.",
                 "Layer 2 only: it re-addresses a camera on the wrong subnet, but cannot cross a router.",
             ],
+            firmware: None,
             enabled_by_default: true,
             recovery: None,
         }

@@ -1,10 +1,12 @@
 // A browser-only stand-in for the engine, for working on the UI with
 // `npm run dev`. The fixtures are the simulator's real output
 // (`meerkat scan --demo --json` and friends), so the shapes are exact; the
-// behaviour is a sketch: a write moves the camera and nothing more. The
-// protocols themselves are tested in Rust against meerkat-sim.
+// behaviour is a sketch: a write moves the camera and nothing more, and a
+// firmware install takes the simulator's three-line image (FIRMWARE_MAGIC in
+// meerkat-sim) and nothing else. The protocols themselves are tested in Rust
+// against meerkat-sim.
 
-import type { Alias, Camera, Catalog, DriverInfo, EngineEvent, LocalIface, NetConfig, WriteOutcome } from '../types';
+import type { Alias, Camera, Catalog, DriverInfo, EngineEvent, InstallEvent, InstallStage, LocalIface, NetConfig, WriteOutcome } from '../types';
 import type { Backend } from './ipc';
 import { fmtIp, inSubnet, network, parseIp } from './net';
 import fixtureCameras from './fixtures/cameras.json';
@@ -19,6 +21,17 @@ export function mockBackend(): Backend {
   const found = new Map<string, Camera>();
   const listeners = new Set<(e: EngineEvent) => void>();
   const emit = (e: EngineEvent) => listeners.forEach((l) => l(e));
+  const installListeners = new Set<(e: InstallEvent) => void>();
+  const stage = (id: string, s: InstallStage) => installListeners.forEach((l) => l({ id, stage: s }));
+  let staged: { token: string; data: Uint8Array } | null = null;
+  const firmwareTarget = (id: string, creds: { username: string } | null) => {
+    const c = found.get(id);
+    if (!c) throw 'that camera is no longer in the list; scan again';
+    if (!c.firmwareVia) throw "no driver here can send this camera a firmware file; follow its maker's steps";
+    if (c.reach.kind === 'mismatch') throw `${c.ip} is outside ${c.reach.iface}'s subnet, and a firmware file goes over HTTP, which cannot reach it`;
+    if (!creds?.username) throw 'this camera needs a username and password';
+    return c;
+  };
   const sim0 = fixtureIfaces[0];
   let aliases: Alias[] = [];
   let cancel = false;
@@ -98,6 +111,47 @@ export function mockBackend(): Backend {
       const c = found.get(id) ?? null;
       if (c) emit({ type: 'camera', camera: structuredClone(c), replaces: [] });
       return c;
+    },
+    async firmwareCheck(id, creds) {
+      const c = firmwareTarget(id, creds);
+      await sleep(300);
+      return { driver: 'onvif', method: 'ONVIF StartFirmwareUpgrade (HTTP POST)', manufacturer: c.vendor, model: c.model, version: c.firmware ?? '1.00', accepts: true, note: null };
+    },
+    async firmwareStage(data) {
+      if (data.length === 0) throw 'that file is empty';
+      staged = { token: String(Date.now()), data };
+      return { token: staged.token, size: data.length };
+    },
+    async firmwareInstall(id, token, _name, creds) {
+      if (!staged || staged.token !== token) throw 'that file is no longer held; choose it again';
+      const data = staged.data;
+      staged = null;
+      const c = firmwareTarget(id, creds);
+      const before = c.firmware ?? '1.00';
+      stage(id, { kind: 'preparing' });
+      await sleep(400);
+      stage(id, { kind: 'pausing', secs: 1 });
+      await sleep(300);
+      stage(id, { kind: 'sending', bytes: data.length });
+      await sleep(800);
+      const [magic, ...rest] = new TextDecoder().decode(data.slice(0, 4096)).split('\n');
+      const field = (k: string) => rest.find((l) => l.startsWith(`${k}=`))?.slice(k.length + 1).trim();
+      if (magic !== 'MEERKAT-SIM-FIRMWARE' || field('model') !== c.model || !field('version')) {
+        throw "The camera refused the file: HTTP 415, ONVIF's answer for a file that is not valid for it. Check that it is the maker's firmware for this model.";
+      }
+      stage(id, { kind: 'installing', secs: 2 });
+      await sleep(2000);
+      stage(id, { kind: 'looking' });
+      await sleep(1200);
+      const now = { ...c, firmware: field('version')! };
+      all.set(id, now);
+      found.set(id, now);
+      emit({ type: 'camera', camera: structuredClone(now), replaces: [] });
+      return { message: 'The camera took the file', before, after: now.firmware, back: true, waitedSecs: 1 };
+    },
+    async onInstall(cb) {
+      installListeners.add(cb);
+      return () => installListeners.delete(cb);
     },
     async openWebUi(id, path) {
       const c = found.get(id);

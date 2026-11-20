@@ -2,7 +2,24 @@
 // in a browser — a mock built from the simulator's real output stands in, so
 // the UI can be worked on without the desktop shell.
 
-import type { Alias, AppInfo, Camera, Catalog, Credentials, DriverInfo, EngineEvent, LocalIface, NetConfig, ScanRequest, ScanSummary, WriteOutcome } from '../types';
+import type {
+  Alias,
+  AppInfo,
+  Camera,
+  Catalog,
+  Credentials,
+  DriverInfo,
+  EngineEvent,
+  FirmwareCheck,
+  InstallEvent,
+  InstallReport,
+  LocalIface,
+  NetConfig,
+  ScanRequest,
+  ScanSummary,
+  StagedFile,
+  WriteOutcome,
+} from '../types';
 
 export const inTauri = '__TAURI_INTERNALS__' in window;
 
@@ -20,6 +37,12 @@ export interface Backend {
   readNetwork(id: string, creds: Credentials | null): Promise<NetConfig>;
   writeNetwork(id: string, cfg: NetConfig, creds: Credentials | null): Promise<WriteOutcome>;
   verify(id: string, outcome: WriteOutcome, timeoutSecs?: number): Promise<Camera | null>;
+  /** What the camera runs, and whether it takes a firmware file. Reads only. */
+  firmwareCheck(id: string, creds: Credentials | null): Promise<FirmwareCheck>;
+  /** Hand the app a firmware file's bytes, held until an install takes it. */
+  firmwareStage(data: Uint8Array): Promise<StagedFile>;
+  firmwareInstall(id: string, token: string, name: string, creds: Credentials | null): Promise<InstallReport>;
+  onInstall(cb: (e: InstallEvent) => void): Promise<() => void>;
   /** `path`: a page inside the web UI that the catalogue names (a firmware page). */
   openWebUi(id: string, path?: string): Promise<string>;
   aliases(): Promise<Alias[]>;
@@ -46,6 +69,11 @@ async function tauriBackend(): Promise<Backend> {
     readNetwork: (id, creds) => invoke('read_network', { id, creds }),
     writeNetwork: (id, cfg, creds) => invoke('write_network', { id, cfg, creds }),
     verify: (id, outcome, timeoutSecs) => invoke('verify', { id, outcome, timeoutSecs }),
+    firmwareCheck: (id, creds) => invoke('firmware_check', { id, creds }),
+    // The bytes go as the raw request body, not as JSON.
+    firmwareStage: (data) => invoke('firmware_stage', data),
+    firmwareInstall: (id, token, name, creds) => invoke('firmware_install', { id, token, name, creds }),
+    onInstall: async (cb) => listen<InstallEvent>('meerkat://install', (e) => cb(e.payload)),
     openWebUi: (id, path) => invoke('open_web_ui', { id, path: path ?? null }),
     aliases: () => invoke('aliases'),
     planAlias: (id) => invoke('plan_alias', { id }),

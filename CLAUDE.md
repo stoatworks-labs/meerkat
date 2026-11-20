@@ -16,12 +16,14 @@ npm run typecheck      # tsc -b
 cd src-tauri && cargo test --workspace     # drivers, engine, simulator e2e, Tauri command layer
 cd src-tauri && cargo clippy --workspace --all-targets
 cd src-tauri && cargo run -p meerkat-cli -- scan --demo
+cd src-tauri && cargo run -p meerkat-cli -- install 192.168.10.30 --user admin --pass admin --demo   # ONVIF firmware check
 ```
 
 ## Rules
 
 - **Never write to a camera you were not asked to touch.** Discovery is read-only and safe on a
-  real network. `set` and Apply are not. Test writes against the simulator (`--demo`).
+  real network. `set`, Apply and a firmware install are not. Test writes against the simulator
+  (`--demo`).
 - Every datagram a driver sends is addressed with `ctx.to()` / `op.to()`, and every port comes
   from `ctx.port()`. That is what keeps demo mode off the network (AGENTS.md §4).
 - The UI fixtures in `src/lib/fixtures/` are generated, not hand-written:

@@ -93,7 +93,30 @@ rows by id. `open_web_ui` takes a `path` only if a firmware row names it.
 Every row has sources: see docs/drivers.md for the rules. Nothing in the catalogue touches a
 camera. **Never make Meerkat try a login on its own**: Sony's FR7 locks an address out for 60
 seconds after 8 wrong passwords, and others do worse. Meerkat links to firmware but never
-downloads, hosts or uploads it.
+downloads or hosts it.
+
+### Firmware install
+
+A driver with `info().firmware` (only ONVIF so far) can send a firmware file the user chose.
+`absorb` sets `Camera::firmware_via` to the owning driver if it has one, else the first such
+driver in `seen`, so a camera an NDI or vendor driver owns but ONVIF also answered gets it. `Engine::check_firmware` only reads. `Engine::install_firmware` refuses while a
+scan runs, an empty file or one over 1 GiB (`MAX_FIRMWARE`), a Mismatch camera, and any camera
+whose `check_firmware` does not accept. Then the driver sends it, the engine waits the time the
+camera gave (`settle_ms`), `verify` finds it again (3× that, between 5 and 30 minutes), and
+`check_firmware` reads the version once more. `InstallReport` carries before and after: only a
+changed version is called a success.
+
+The invariants:
+
+- **Never automatic.** An install starts only from the user's explicit yes: the dialog's tick
+  box and button, or the CLI's `--yes`. Nothing retries an install.
+- **Only to the camera's own address.** ONVIF's `UploadUri` keeps its port and path, but the
+  host is always `cam.ip` (`onvif::upload_target`), and HTTPS is refused: a camera cannot point
+  the file at another machine.
+- **The file crosses the IPC boundary once.** `firmware_stage` takes it as the raw request body
+  and holds it; `firmware_install` takes it by token, so the same send cannot run twice from
+  one choice. Progress goes out as `meerkat://install` events, `{ id, stage: { kind, … } }`.
+- Meerkat never supplies, downloads or mirrors firmware: the user brings the maker's file.
 
 ## 4. The sandbox (demo mode), and why `ctx.to()` matters
 
@@ -124,6 +147,12 @@ through the same route, and `Engine::browser_url` does it for Open web UI. A dri
   a web UI link only, and a camera lost at an unreachable address goes to Neuralyzer.
   Out of the box a BirdDog uses DHCP, falling back to 192.168.100.100.
 - **ONVIF:** UsernameToken digest. It needs the camera's login for both reads and writes.
+  Firmware (Core 26.06 §8.3.9): `GetServiceCapabilities` says `HttpFirmwareUpgrade="true"` on
+  `System` if it takes a file; `StartFirmwareUpgrade` returns `UploadUri`, `UploadDelay` and
+  `ExpectedDownTime` (xs:durations); the file goes as `application/octet-stream` by HTTP POST,
+  with HTTP digest (§5.9.1). 415 means a file it does not take, 500 a device error. The camera
+  keeps its network settings and logins. `UpgradeSystemFirmware` (SOAP MTOM) is deprecated and
+  not used.
 - **VHD (PTZOptics):** discovery only, because the set dialect is unverified.
 - **NDI:** sources at this computer's own addresses are skipped (its own NDI outputs).
 
@@ -139,6 +168,11 @@ through the same route, and `Engine::browser_url` does it for Open web UI. A dri
   silently denies a Finder-launched app all LAN traffic, and every camera looks absent. It
   never shows in development, because a process started from Terminal inherits Terminal's
   permission. Check a built bundle with `plutil -p Meerkat.app/Contents/Info.plist`.
+- `Http::upload` sends a GET before the POST to collect the digest challenge, so a large file
+  is not sent once just to be told 401. The ONVIF driver gives the POST 120 s plus a second
+  per 200 kB.
+- The simulator's cameras drop every connection, and leave WS-Discovery unanswered, while
+  `down_until` runs after a firmware install: that is what makes the engine's wait real.
 - The app raises its file-descriptor limit at start. A /22 sweep holds a socket per in-flight
   probe per driver, and macOS starts apps at 256.
 - **Nothing has been run against a real camera.** Treat every driver as written from documents

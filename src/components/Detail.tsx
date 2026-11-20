@@ -171,7 +171,7 @@ function DetailFor({ cam }: { cam: Camera }) {
             : undefined
         }
       />
-      <CameraFirmware cam={cam} />
+      <CameraFirmware cam={cam} creds={creds} />
 
       <section className="netform">
         <h3>Network settings</h3>

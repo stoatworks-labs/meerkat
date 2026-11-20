@@ -55,6 +55,8 @@ export interface Camera {
   lastSeen: number;
   /** The catalogue rows about this camera, by id (catalog.rs). */
   catalog: CatalogMatch;
+  /** The driver that can send it a firmware file, when one has seen it (ONVIF). The camera still has to say it accepts one. */
+  firmwareVia: string | null;
 }
 
 export interface Credentials {
@@ -83,6 +85,8 @@ export interface DriverInfo {
   notes: string[];
   enabledByDefault: boolean;
   recovery: Recovery | null;
+  /** How it installs a firmware file, when it can. */
+  firmware: string | null;
 }
 
 /** A vendor's own tool for a camera nothing else can reach (driver.rs). */
@@ -188,6 +192,45 @@ export interface WriteOutcome {
   restarts: boolean;
   expectIp: string | null;
   settleMs: number;
+}
+
+/** What a camera says before a firmware file is sent to it (driver.rs). */
+export interface FirmwareCheck {
+  driver: string;
+  method: string;
+  manufacturer: string | null;
+  model: string | null;
+  version: string | null;
+  accepts: boolean;
+  /** Why not, when it does not accept one. */
+  note: string | null;
+}
+
+export type InstallStage =
+  | { kind: 'preparing' }
+  | { kind: 'pausing'; secs: number }
+  | { kind: 'sending'; bytes: number }
+  | { kind: 'installing'; secs: number }
+  | { kind: 'looking' };
+
+export interface InstallEvent {
+  id: string;
+  stage: InstallStage;
+}
+
+/** What an install ended with (engine.rs). `after` is null when it has not come back, or did not say. */
+export interface InstallReport {
+  message: string;
+  before: string | null;
+  after: string | null;
+  back: boolean;
+  waitedSecs: number;
+}
+
+/** A firmware file held by the app until an install takes it. */
+export interface StagedFile {
+  token: string;
+  size: number;
 }
 
 export type Level = 'debug' | 'info' | 'warn' | 'error';
