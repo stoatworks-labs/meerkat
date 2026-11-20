@@ -36,14 +36,14 @@ simulated cameras. The [user guide](docs/USER-GUIDE.md) covers every control.*
 
 ## Download
 
-**[v0.1.0](https://github.com/stoatworks-labs/meerkat/releases/tag/v0.1.0)** — prebuilt for macOS, Windows and Linux. Pick your platform:
+**[v0.2.0](https://github.com/stoatworks-labs/meerkat/releases/tag/v0.2.0)** — prebuilt for macOS, Windows and Linux. Pick your platform:
 
 <details>
 <summary><b>macOS</b> — Universal (Apple Silicon + Intel)</summary>
 
 | Build | Download | Size |
 | --- | --- | --- |
-| Universal (Apple Silicon + Intel) · .dmg disk image | [`Meerkat_0.1.0_universal.dmg`](https://github.com/stoatworks-labs/meerkat/releases/download/v0.1.0/Meerkat_0.1.0_universal.dmg) | 8.3 MB |
+| Universal (Apple Silicon + Intel) · .dmg disk image | [`Meerkat_0.2.0_universal.dmg`](https://github.com/stoatworks-labs/meerkat/releases/download/v0.2.0/Meerkat_0.2.0_universal.dmg) | 8.6 MB |
 
 </details>
 
@@ -52,7 +52,7 @@ simulated cameras. The [user guide](docs/USER-GUIDE.md) covers every control.*
 
 | Build | Download | Size |
 | --- | --- | --- |
-| x64 · .exe installer | [`Meerkat_0.1.0_x64-setup.exe`](https://github.com/stoatworks-labs/meerkat/releases/download/v0.1.0/Meerkat_0.1.0_x64-setup.exe) | 3.2 MB |
+| x64 · .exe installer | [`Meerkat_0.2.0_x64-setup.exe`](https://github.com/stoatworks-labs/meerkat/releases/download/v0.2.0/Meerkat_0.2.0_x64-setup.exe) | 3.3 MB |
 
 </details>
 
@@ -61,18 +61,18 @@ simulated cameras. The [user guide](docs/USER-GUIDE.md) covers every control.*
 
 | Build | Download | Size |
 | --- | --- | --- |
-| x64 · .deb package (Debian/Ubuntu) | [`Meerkat_0.1.0_amd64.deb`](https://github.com/stoatworks-labs/meerkat/releases/download/v0.1.0/Meerkat_0.1.0_amd64.deb) | 5.0 MB |
-| x64 · .rpm package (Fedora/RHEL) | [`Meerkat-0.1.0-1.x86_64.rpm`](https://github.com/stoatworks-labs/meerkat/releases/download/v0.1.0/Meerkat-0.1.0-1.x86_64.rpm) | 5.0 MB |
+| x64 · .deb package (Debian/Ubuntu) | [`Meerkat_0.2.0_amd64.deb`](https://github.com/stoatworks-labs/meerkat/releases/download/v0.2.0/Meerkat_0.2.0_amd64.deb) | 5.2 MB |
+| x64 · .rpm package (Fedora/RHEL) | [`Meerkat-0.2.0-1.x86_64.rpm`](https://github.com/stoatworks-labs/meerkat/releases/download/v0.2.0/Meerkat-0.2.0-1.x86_64.rpm) | 5.2 MB |
 
 </details>
 
 Also in this release:
 
-- [`Meerkat_0.1.0_universal.app.tar.gz`](https://github.com/stoatworks-labs/meerkat/releases/download/v0.1.0/Meerkat_0.1.0_universal.app.tar.gz) — macOS app bundle (updater archive; the .dmg is the install), 8.3 MB
+- [`Meerkat_0.2.0_universal.app.tar.gz`](https://github.com/stoatworks-labs/meerkat/releases/download/v0.2.0/Meerkat_0.2.0_universal.app.tar.gz) — macOS app bundle (updater archive; the .dmg is the install), 8.6 MB
 
 All builds, checksums and release notes: [github.com/stoatworks-labs/meerkat/releases](https://github.com/stoatworks-labs/meerkat/releases).
 
-The Windows builds are unsigned, so SmartScreen warns once.
+macOS builds are signed and notarised and open normally. The Windows builds are unsigned, so SmartScreen warns once.
 
 <!-- downloads:end -->
 
