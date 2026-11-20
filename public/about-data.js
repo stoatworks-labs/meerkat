@@ -12,7 +12,7 @@
 window.STOATWORKS_ABOUT = Object.assign({
   "name": "Meerkat",
   "slug": "meerkat",
-  "version": "v0.1.0",
+  "version": "v0.2.0",
   "hook": "Find every PTZ camera on the network and set its address",
   "licence": "MIT",
   "guide": "https://stoatworks-labs.com/software/meerkat/guide/",

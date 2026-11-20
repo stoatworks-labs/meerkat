@@ -1,6 +1,6 @@
 [package]
 name = "meerkat-sim"
-version = "0.1.0"
+version = "0.2.0"
 description = "Simulated PTZ cameras for Meerkat's tests and demo mode: Panasonic Easy IP, Sony IP Setup, BirdDog REST, ONVIF and VHD, on loopback"
 authors = ["Allan Sargeant"]
 edition = "2021"

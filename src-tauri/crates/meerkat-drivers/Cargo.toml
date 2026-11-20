@@ -1,6 +1,6 @@
 [package]
 name = "meerkat-drivers"
-version = "0.1.0"
+version = "0.2.0"
 description = "Meerkat's vendor drivers: Panasonic Easy IP, Sony IP Setup, BirdDog REST, ONVIF and NDI mDNS"
 authors = ["Allan Sargeant"]
 edition = "2021"

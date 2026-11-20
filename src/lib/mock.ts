@@ -49,8 +49,8 @@ export function mockBackend(): Backend {
   };
 
   return {
-    appInfo: async () => ({ version: '0.1.0', demo: true, platform: 'browser' }),
-    setDemo: async () => ({ version: '0.1.0', demo: true, platform: 'browser' }),
+    appInfo: async () => ({ version: '0.2.0', demo: true, platform: 'browser' }),
+    setDemo: async () => ({ version: '0.2.0', demo: true, platform: 'browser' }),
     interfaces: async () => ifaces(),
     drivers: async () => fixtureDrivers as DriverInfo[],
     catalog: async () => fixtureCatalog as Catalog,

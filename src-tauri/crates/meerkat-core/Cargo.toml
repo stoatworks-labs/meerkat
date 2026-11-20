@@ -1,6 +1,6 @@
 [package]
 name = "meerkat-core"
-version = "0.1.0"
+version = "0.2.0"
 description = "Meerkat's engine: the camera model, the driver trait, local interfaces, scanning across subnets and merging what the drivers find"
 authors = ["Allan Sargeant"]
 edition = "2021"

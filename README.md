@@ -10,7 +10,9 @@
 **Find every PTZ camera on the network, give it the right address, open its web page.**
 Meerkat speaks each brand's own discovery protocol, so it finds cameras that are on the wrong
 subnet as well as the right one. It can re-address them where the brand allows it, and it opens
-each camera's built-in web UI with one click.
+each camera's built-in web UI with one click. It shows each camera's factory login and its
+maker's firmware page, and sends a firmware file you downloaded to a camera that takes one
+over ONVIF.
 
 | Brand | Finds it with | Can change its address | Notes |
 | --- | --- | --- | --- |
@@ -25,7 +27,9 @@ each camera's built-in web UI with one click.
 
 ![A BirdDog on its fallback address, with the Reach it from here panel offering a temporary address](docs/screenshots/reach-it.png)
 
-*Both pictures are the app's interface on its browser preview backend, scanning the eight
+![The install dialog after sending a firmware file to the simulated AVer over ONVIF: every stage ticked, and the camera back on 2.00](docs/screenshots/install.png)
+
+*The pictures are the app's interface on its browser preview backend, scanning the eight
 simulated cameras. The [user guide](docs/USER-GUIDE.md) covers every control.*
 
 <!-- downloads:start -->
@@ -205,7 +209,8 @@ trait. The engine, the UI and the CLI pick it up from `meerkat_drivers::all()`. 
 
 ## Status
 
-v0.1.0 is the first tagged build: a beta.
+v0.2.0 is a beta. It adds the factory-login and firmware-page catalogue, and firmware install
+over ONVIF, to v0.1.0's discovery and addressing.
 
 - **Never run against real cameras.** Every driver is written from the vendor's public
   documentation and tested against the simulator. The first real Panasonic, Sony and BirdDog

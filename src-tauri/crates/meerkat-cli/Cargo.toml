@@ -1,6 +1,6 @@
 [package]
 name = "meerkat-cli"
-version = "0.1.0"
+version = "0.2.0"
 description = "Meerkat from a terminal: find PTZ cameras, change their IP settings, open their web UI"
 authors = ["Allan Sargeant"]
 edition = "2021"

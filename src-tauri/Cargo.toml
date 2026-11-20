@@ -1,6 +1,6 @@
 [package]
 name = "meerkat"
-version = "0.1.0"
+version = "0.2.0"
 description = "Find PTZ cameras on the network — across subnets — change their IP settings and open their web UI: BirdDog, Panasonic, Sony, ONVIF and NDI"
 authors = ["Allan Sargeant"]
 edition = "2021"

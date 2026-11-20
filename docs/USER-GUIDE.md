@@ -5,7 +5,9 @@ address**. It speaks each brand's own discovery protocol, so it finds cameras on
 subnet as well as the right one; it changes a camera's address, mask, gateway, DNS and name
 where the brand allows it; and it opens each camera's built-in web page with one click. It
 knows Panasonic (Easy IP), Sony (IP Setup), BirdDog (its REST API), PTZOptics and other VHD
-cameras, any ONVIF camera and any NDI camera.
+cameras, any ONVIF camera and any NDI camera. For each camera it shows the login it leaves
+the factory with and its maker's firmware page, and it can send a firmware file you
+downloaded to a camera that takes one over ONVIF.
 
 > **Before you rely on this:** every driver was written from the vendor's own published
 > documentation and is tested end to end against a simulator built into Meerkat, which
@@ -14,7 +16,7 @@ cameras, any ONVIF camera and any NDI camera.
 > yet**, and the temporary-address commands described below have never been run on a real
 > network interface. Try a change on an idle camera on the bench before you use it on a
 > show. See [What has been checked](#what-has-been-checked). **Status: beta, released at
-> v0.1.0.**
+> v0.2.0.**
 >
 > This codebase was created with [Claude](https://claude.com/claude-code) (Anthropic),
 > directed and reviewed by a human author.
@@ -211,6 +213,8 @@ and reads its version:
 - **Not back after …**: it may still be installing. Leave it powered, and scan again later.
 - **The camera refused the file (HTTP 415)**: the file is not one this camera takes. Nothing
   was installed.
+
+![The install dialog after a pretend file was sent to the simulated AVer: every stage ticked, and the camera back on 2.00](screenshots/install.png)
 
 Keep the camera powered and connected until it is back: a camera that loses power while it
 installs can need its maker's repair. Meerkat cannot undo an update. Under ONVIF the camera
