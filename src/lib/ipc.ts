@@ -2,7 +2,7 @@
 // in a browser — a mock built from the simulator's real output stands in, so
 // the UI can be worked on without the desktop shell.
 
-import type { Alias, AppInfo, Camera, Credentials, DriverInfo, EngineEvent, LocalIface, NetConfig, ScanRequest, ScanSummary, WriteOutcome } from '../types';
+import type { Alias, AppInfo, Camera, Catalog, Credentials, DriverInfo, EngineEvent, LocalIface, NetConfig, ScanRequest, ScanSummary, WriteOutcome } from '../types';
 
 export const inTauri = '__TAURI_INTERNALS__' in window;
 
@@ -11,6 +11,7 @@ export interface Backend {
   setDemo(on: boolean): Promise<AppInfo>;
   interfaces(): Promise<LocalIface[]>;
   drivers(): Promise<DriverInfo[]>;
+  catalog(): Promise<Catalog>;
   cameras(): Promise<Camera[]>;
   scan(req: ScanRequest): Promise<ScanSummary>;
   stopScan(): Promise<void>;
@@ -19,7 +20,8 @@ export interface Backend {
   readNetwork(id: string, creds: Credentials | null): Promise<NetConfig>;
   writeNetwork(id: string, cfg: NetConfig, creds: Credentials | null): Promise<WriteOutcome>;
   verify(id: string, outcome: WriteOutcome, timeoutSecs?: number): Promise<Camera | null>;
-  openWebUi(id: string): Promise<string>;
+  /** `path`: a page inside the web UI that the catalogue names (a firmware page). */
+  openWebUi(id: string, path?: string): Promise<string>;
   aliases(): Promise<Alias[]>;
   planAlias(id: string): Promise<Alias>;
   addAlias(alias: Alias): Promise<Camera[]>;
@@ -35,6 +37,7 @@ async function tauriBackend(): Promise<Backend> {
     setDemo: (on) => invoke('set_demo', { on }),
     interfaces: () => invoke('interfaces'),
     drivers: () => invoke('drivers'),
+    catalog: () => invoke('catalog'),
     cameras: () => invoke('cameras'),
     scan: (req) => invoke('scan', { req }),
     stopScan: () => invoke('stop_scan'),
@@ -43,7 +46,7 @@ async function tauriBackend(): Promise<Backend> {
     readNetwork: (id, creds) => invoke('read_network', { id, creds }),
     writeNetwork: (id, cfg, creds) => invoke('write_network', { id, cfg, creds }),
     verify: (id, outcome, timeoutSecs) => invoke('verify', { id, outcome, timeoutSecs }),
-    openWebUi: (id) => invoke('open_web_ui', { id }),
+    openWebUi: (id, path) => invoke('open_web_ui', { id, path: path ?? null }),
     aliases: () => invoke('aliases'),
     planAlias: (id) => invoke('plan_alias', { id }),
     addAlias: (alias) => invoke('add_alias', { alias }),

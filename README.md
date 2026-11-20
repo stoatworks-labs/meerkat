@@ -127,6 +127,16 @@ Meerkat gives them consecutive addresses in the order shown, one at a time, chec
 
 **Open web UI** opens the camera's own page in your browser, on the port that brand uses.
 
+## Factory logins and firmware
+
+For the selected camera, Meerkat shows the login it leaves the factory with and links to its
+maker's firmware download page, with the maker's update steps and warnings. Both come from the
+makers' own documents, and every fact links to its source. It covers Panasonic, Sony, BirdDog,
+PTZOptics, Canon, Lumens, AVer, Marshall, JVC, Vaddio, Datavideo, Avonic, Bolin, Zowietek and
+Telycam. **Meerkat never tries a login by itself** (some cameras lock an address out after a few
+wrong passwords), and it does not supply or install firmware. The sidebar's **Factory logins…**
+and **Firmware downloads…** list every brand.
+
 ## Demo mode
 
 Tick **Demo cameras** (or start with `MEERKAT_DEMO=1`, or `--demo`) to run against eight
@@ -147,6 +157,7 @@ cargo run -p meerkat-cli -- scan --range 10.20.0.0/24  # plus a routed subnet
 cargo run -p meerkat-cli -- set <camera> --ip 192.168.10.21 --prefix 24 --gw 192.168.10.1        # dry run
 cargo run -p meerkat-cli -- set <camera> --ip 192.168.10.21 --prefix 24 --gw 192.168.10.1 --yes  # do it
 cargo run -p meerkat-cli -- web <camera>
+cargo run -p meerkat-cli -- catalog sony                # factory logins and firmware pages
 cargo run -p meerkat-cli -- scan --demo --json         # against the simulator
 ```
 
@@ -187,6 +198,8 @@ v0.1.0 is the first tagged build: a beta.
   hand-off and its watch are tested against the simulator only; Neuralyzer itself has not been
   run alongside it.
 - **PTZOptics / VHD:** discovery only. The platform's set command is not verified.
+- **Factory logins and firmware pages** are read from the makers' documents, not from
+  cameras. A row marked *excerpt only* or *not the maker* is weaker.
 - **Temporary addresses** are tested against the simulator. The system commands that add and
   remove them (`ifconfig … alias` through an administrator prompt on macOS, `ip addr` through
   `pkexec` on Linux, `New-NetIPAddress` through an elevated PowerShell on Windows) are checked as

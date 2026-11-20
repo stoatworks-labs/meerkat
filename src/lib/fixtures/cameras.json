@@ -44,7 +44,21 @@
       "kind": "mismatch",
       "iface": "sim0"
     },
-    "lastSeen": 1795180946503
+    "lastSeen": 1795209976333,
+    "catalog": {
+      "logins": {
+        "ids": [
+          "panasonic-initial-account"
+        ],
+        "exact": true
+      },
+      "firmware": {
+        "ids": [
+          "panasonic-ue150"
+        ],
+        "exact": true
+      }
+    }
   },
   {
     "id": "mac:08:00:46:aa:10:01",
@@ -92,7 +106,32 @@
       "kind": "mismatch",
       "iface": "sim0"
     },
-    "lastSeen": 1795180946503
+    "lastSeen": 1795209976333,
+    "catalog": {
+      "logins": {
+        "ids": [
+          "sony-x400-x120",
+          "sony-a40-a12",
+          "sony-fr7-am7"
+        ],
+        "exact": false
+      },
+      "firmware": {
+        "ids": [
+          "sony-srg-x400",
+          "sony-srg-x402",
+          "sony-srg-x120",
+          "sony-brc-x400",
+          "sony-brc-x401",
+          "sony-srg-a40",
+          "sony-srg-a12",
+          "sony-srg-300se",
+          "sony-brc-am7",
+          "sony-fr7"
+        ],
+        "exact": false
+      }
+    }
   },
   {
     "id": "mac:00:80:45:1a:2b:02",
@@ -139,7 +178,21 @@
       "kind": "local",
       "iface": "sim0"
     },
-    "lastSeen": 1795180946503
+    "lastSeen": 1795209976333,
+    "catalog": {
+      "logins": {
+        "ids": [
+          "panasonic-initial-account"
+        ],
+        "exact": true
+      },
+      "firmware": {
+        "ids": [
+          "panasonic-ue100"
+        ],
+        "exact": true
+      }
+    }
   },
   {
     "id": "ip:192.168.10.30",
@@ -180,7 +233,21 @@
       "kind": "local",
       "iface": "sim0"
     },
-    "lastSeen": 1795180946352
+    "lastSeen": 1795209976184,
+    "catalog": {
+      "logins": {
+        "ids": [
+          "aver-tr-ptz"
+        ],
+        "exact": true
+      },
+      "firmware": {
+        "ids": [
+          "aver-ptz310-330"
+        ],
+        "exact": true
+      }
+    }
   },
   {
     "id": "mac:08:00:46:aa:10:02",
@@ -229,7 +296,32 @@
       "kind": "local",
       "iface": "sim0"
     },
-    "lastSeen": 1795180946503
+    "lastSeen": 1795209976333,
+    "catalog": {
+      "logins": {
+        "ids": [
+          "sony-x400-x120",
+          "sony-a40-a12",
+          "sony-fr7-am7"
+        ],
+        "exact": false
+      },
+      "firmware": {
+        "ids": [
+          "sony-srg-x400",
+          "sony-srg-x402",
+          "sony-srg-x120",
+          "sony-brc-x400",
+          "sony-brc-x401",
+          "sony-srg-a40",
+          "sony-srg-a12",
+          "sony-srg-300se",
+          "sony-brc-am7",
+          "sony-fr7"
+        ],
+        "exact": false
+      }
+    }
   },
   {
     "id": "mac:80:27:b6:26:08:f9",
@@ -288,7 +380,21 @@
       "kind": "local",
       "iface": "sim0"
     },
-    "lastSeen": 1795180949010
+    "lastSeen": 1795209978838,
+    "catalog": {
+      "logins": {
+        "ids": [
+          "birddog-x"
+        ],
+        "exact": true
+      },
+      "firmware": {
+        "ids": [
+          "birddog-x1-ultra"
+        ],
+        "exact": true
+      }
+    }
   },
   {
     "id": "mac:dc:ed:84:00:11:22",
@@ -337,7 +443,22 @@
       "kind": "mismatch",
       "iface": "sim0"
     },
-    "lastSeen": 1795180946201
+    "lastSeen": 1795209976031,
+    "catalog": {
+      "logins": {
+        "ids": [
+          "ptzoptics-g3-before-fix",
+          "ptzoptics-g3-after-fix"
+        ],
+        "exact": true
+      },
+      "firmware": {
+        "ids": [
+          "ptzoptics-g3"
+        ],
+        "exact": true
+      }
+    }
   },
   {
     "id": "ip:192.168.100.100",
@@ -378,6 +499,36 @@
       "kind": "mismatch",
       "iface": "sim0"
     },
-    "lastSeen": 1795180946201
+    "lastSeen": 1795209976031,
+    "catalog": {
+      "logins": {
+        "ids": [
+          "birddog-p",
+          "birddog-x"
+        ],
+        "exact": false
+      },
+      "firmware": {
+        "ids": [
+          "birddog-p100",
+          "birddog-p110",
+          "birddog-p120",
+          "birddog-p200",
+          "birddog-p240",
+          "birddog-p400",
+          "birddog-p4k",
+          "birddog-x1",
+          "birddog-x1-ultra",
+          "birddog-x4-ultra",
+          "birddog-x4e-ultra",
+          "birddog-x5-ultra",
+          "birddog-max",
+          "birddog-maki-live",
+          "birddog-maki-ultra-12x",
+          "birddog-maki-ultra-20x"
+        ],
+        "exact": false
+      }
+    }
   }
 ]

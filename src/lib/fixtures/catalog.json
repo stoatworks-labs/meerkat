@@ -1,0 +1,1935 @@
+{
+  "firmware": [
+    {
+      "brand": "Panasonic",
+      "downloads": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/upgue150_e.htm",
+      "downloadsNote": "Panasonic shows an agreement page before the download.",
+      "family": "AW-UE150, AW-UE155, AW-UN145",
+      "how": [
+        "Extract the download. Leave the extracted folder and its files as they are, in a folder whose path has no spaces or double-byte characters.",
+        "In the camera's web page: SETUP > Maintenance > Product info. Under Firmware File, Select the UPDATE.HDC file, then Execute and OK.",
+        "Or use Panasonic's Easy IP Setup Tool Plus (Windows 10 and 11)."
+      ],
+      "id": "panasonic-ue150",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 Update Procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE40 update procedure",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he40/he40_update_newtek_e.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 10 minutes. Don't power the camera down or unplug its LAN cable, and do nothing else with it until it finishes.",
+        "The camera switches itself off and on part-way through. The update is still running: keep the web page open.",
+        "If the power or the network was lost and it says Update failed, reconnect and run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Panasonic",
+      "downloads": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/upghe40_e.htm",
+      "downloadsNote": "Panasonic shows an agreement page before the download.",
+      "family": "AW-HE35, HE38, HE40, HE48, HE58, HE65, HN40",
+      "how": [
+        "Extract the download. Leave the extracted folder and its files as they are, in a folder whose path has no spaces or double-byte characters.",
+        "In the camera's web page: SETUP > Maintenance > Product info. Under Firmware File, Select the UPDATE.HDC file, then Execute and OK.",
+        "Or use Panasonic's Easy IP Setup Tool Plus (Windows 10 and 11)."
+      ],
+      "id": "panasonic-he40",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 Update Procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE40 update procedure",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he40/he40_update_newtek_e.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 10 minutes. Don't power the camera down or unplug its LAN cable, and do nothing else with it until it finishes.",
+        "The camera switches itself off and on part-way through. The update is still running: keep the web page open.",
+        "If the power or the network was lost and it says Update failed, reconnect and run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Panasonic",
+      "downloads": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/upgue100_e.htm",
+      "downloadsNote": "Panasonic shows an agreement page before the download.",
+      "family": "AW-UE100",
+      "how": [
+        "Extract the download. Leave the extracted folder and its files as they are, in a folder whose path has no spaces or double-byte characters.",
+        "In the camera's web page: SETUP > Maintenance > Product info. Under Firmware File, Select the UPDATE.HDC file, then Execute and OK.",
+        "Or use Panasonic's Easy IP Setup Tool Plus (Windows 10 and 11)."
+      ],
+      "id": "panasonic-ue100",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 Update Procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE40 update procedure",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he40/he40_update_newtek_e.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 10 minutes. Don't power the camera down or unplug its LAN cable, and do nothing else with it until it finishes.",
+        "The camera switches itself off and on part-way through. The update is still running: keep the web page open.",
+        "If the power or the network was lost and it says Update failed, reconnect and run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Panasonic",
+      "downloads": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/upgue160_e.htm",
+      "downloadsNote": "Panasonic shows an agreement page before the download.",
+      "family": "AW-UE160",
+      "how": [
+        "Extract the download. Leave the extracted folder and its files as they are, in a folder whose path has no spaces or double-byte characters.",
+        "In the camera's web page: SETUP > Maintenance > Product info. Under Firmware File, Select the UPDATE.HDC file, then Execute and OK.",
+        "Or use Panasonic's Easy IP Setup Tool Plus (Windows 10 and 11)."
+      ],
+      "id": "panasonic-ue160",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 Update Procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE40 update procedure",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he40/he40_update_newtek_e.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 10 minutes. Don't power the camera down or unplug its LAN cable, and do nothing else with it until it finishes.",
+        "The camera switches itself off and on part-way through. The update is still running: keep the web page open.",
+        "If the power or the network was lost and it says Update failed, reconnect and run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Panasonic",
+      "downloads": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/upgue4_e.htm",
+      "downloadsNote": "Panasonic shows an agreement page before the download.",
+      "family": "AW-UE4",
+      "how": [
+        "Extract the download. Leave the extracted folder and its files as they are, in a folder whose path has no spaces or double-byte characters.",
+        "In the camera's web page: SETUP > Maintenance > Product info. Under Firmware File, Select the UPDATE.HDC file, then Execute and OK.",
+        "Or use Panasonic's Easy IP Setup Tool Plus (Windows 10 and 11)."
+      ],
+      "id": "panasonic-ue4",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 Update Procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE40 update procedure",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he40/he40_update_newtek_e.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 10 minutes. Don't power the camera down or unplug its LAN cable, and do nothing else with it until it finishes.",
+        "The camera switches itself off and on part-way through. The update is still running: keep the web page open.",
+        "If the power or the network was lost and it says Update failed, reconnect and run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Panasonic",
+      "downloads": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/upgue20_e.htm",
+      "downloadsNote": "Panasonic shows an agreement page before the download.",
+      "family": "AW-UE20, AW-HE20",
+      "how": [
+        "Extract the download. Leave the extracted folder and its files as they are, in a folder whose path has no spaces or double-byte characters.",
+        "In the camera's web page: SETUP > Maintenance > Product info. Under Firmware File, Select the UPDATE.HDC file, then Execute and OK.",
+        "Or use Panasonic's Easy IP Setup Tool Plus (Windows 10 and 11)."
+      ],
+      "id": "panasonic-ue20",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 Update Procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE40 update procedure",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he40/he40_update_newtek_e.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 10 minutes. Don't power the camera down or unplug its LAN cable, and do nothing else with it until it finishes.",
+        "The camera switches itself off and on part-way through. The update is still running: keep the web page open.",
+        "If the power or the network was lost and it says Update failed, reconnect and run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Panasonic",
+      "downloads": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/upgue40_e.htm",
+      "downloadsNote": "Panasonic shows an agreement page before the download.",
+      "family": "AW-UE30, UE40, UE43, UE50, UE53",
+      "how": [
+        "Extract the download. Leave the extracted folder and its files as they are, in a folder whose path has no spaces or double-byte characters.",
+        "In the camera's web page: SETUP > Maintenance > Product info. Under Firmware File, Select the UPDATE.HDC file, then Execute and OK.",
+        "Or use Panasonic's Easy IP Setup Tool Plus (Windows 10 and 11)."
+      ],
+      "id": "panasonic-ue40",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 Update Procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE40 update procedure",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he40/he40_update_newtek_e.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 10 minutes. Don't power the camera down or unplug its LAN cable, and do nothing else with it until it finishes.",
+        "The camera switches itself off and on part-way through. The update is still running: keep the web page open.",
+        "If the power or the network was lost and it says Update failed, reconnect and run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Panasonic",
+      "downloads": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/upgue70_e.htm",
+      "downloadsNote": "Panasonic shows an agreement page before the download.",
+      "family": "AW-UE63, UE65, UE70, UN70",
+      "how": [
+        "Extract the download. Leave the extracted folder and its files as they are, in a folder whose path has no spaces or double-byte characters.",
+        "In the camera's web page: SETUP > Maintenance > Product info. Under Firmware File, Select the UPDATE.HDC file, then Execute and OK.",
+        "Or use Panasonic's Easy IP Setup Tool Plus (Windows 10 and 11)."
+      ],
+      "id": "panasonic-ue70",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 Update Procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE40 update procedure",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he40/he40_update_newtek_e.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 10 minutes. Don't power the camera down or unplug its LAN cable, and do nothing else with it until it finishes.",
+        "The camera switches itself off and on part-way through. The update is still running: keep the web page open.",
+        "If the power or the network was lost and it says Update failed, reconnect and run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Panasonic",
+      "downloads": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/upgue80_e.htm",
+      "downloadsNote": "Panasonic shows an agreement page before the download.",
+      "family": "AW-UE80",
+      "how": [
+        "Extract the download. Leave the extracted folder and its files as they are, in a folder whose path has no spaces or double-byte characters.",
+        "In the camera's web page: SETUP > Maintenance > Product info. Under Firmware File, Select the UPDATE.HDC file, then Execute and OK.",
+        "Or use Panasonic's Easy IP Setup Tool Plus (Windows 10 and 11)."
+      ],
+      "id": "panasonic-ue80",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 Update Procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE40 update procedure",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he40/he40_update_newtek_e.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 10 minutes. Don't power the camera down or unplug its LAN cable, and do nothing else with it until it finishes.",
+        "The camera switches itself off and on part-way through. The update is still running: keep the web page open.",
+        "If the power or the network was lost and it says Update failed, reconnect and run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Panasonic",
+      "downloads": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/upghe130_e.htm",
+      "downloadsNote": "Panasonic shows an agreement page before the download.",
+      "family": "AW-HE130",
+      "how": [
+        "Extract the download. Leave the extracted folder and its files as they are, in a folder whose path has no spaces or double-byte characters.",
+        "In the camera's web page: SETUP > Maintenance > Product info. Under Firmware File, Select the UPDATE.HDC file, then Execute and OK.",
+        "Or use Panasonic's Easy IP Setup Tool Plus (Windows 10 and 11)."
+      ],
+      "id": "panasonic-he130",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 Update Procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE40 update procedure",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he40/he40_update_newtek_e.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 10 minutes. Don't power the camera down or unplug its LAN cable, and do nothing else with it until it finishes.",
+        "The camera switches itself off and on part-way through. The update is still running: keep the web page open.",
+        "If the power or the network was lost and it says Update failed, reconnect and run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Panasonic",
+      "downloads": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/upghe145_e.htm",
+      "downloadsNote": "Panasonic shows an agreement page before the download.",
+      "family": "AW-HE145",
+      "how": [
+        "Extract the download. Leave the extracted folder and its files as they are, in a folder whose path has no spaces or double-byte characters.",
+        "In the camera's web page: SETUP > Maintenance > Product info. Under Firmware File, Select the UPDATE.HDC file, then Execute and OK.",
+        "Or use Panasonic's Easy IP Setup Tool Plus (Windows 10 and 11)."
+      ],
+      "id": "panasonic-he145",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 Update Procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE40 update procedure",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he40/he40_update_newtek_e.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 10 minutes. Don't power the camera down or unplug its LAN cable, and do nothing else with it until it finishes.",
+        "The camera switches itself off and on part-way through. The update is still running: keep the web page open.",
+        "If the power or the network was lost and it says Update failed, reconnect and run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Panasonic",
+      "downloads": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/upghe42_e.htm",
+      "downloadsNote": "Panasonic shows an agreement page before the download.",
+      "family": "AW-HE42, AW-HE68",
+      "how": [
+        "Extract the download. Leave the extracted folder and its files as they are, in a folder whose path has no spaces or double-byte characters.",
+        "In the camera's web page: SETUP > Maintenance > Product info. Under Firmware File, Select the UPDATE.HDC file, then Execute and OK.",
+        "Or use Panasonic's Easy IP Setup Tool Plus (Windows 10 and 11)."
+      ],
+      "id": "panasonic-he42",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 Update Procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE40 update procedure",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he40/he40_update_newtek_e.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 10 minutes. Don't power the camera down or unplug its LAN cable, and do nothing else with it until it finishes.",
+        "The camera switches itself off and on part-way through. The update is still running: keep the web page open.",
+        "If the power or the network was lost and it says Update failed, reconnect and run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Sony",
+      "downloads": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/srg-x400/downloads",
+      "downloadsNote": "Sony asks you to accept a licence before the download.",
+      "family": "SRG-X400",
+      "how": [
+        "In the camera's web page, Version up: under Firmware upgrade, Choose File, then follow the on-screen instructions.",
+        "Sony's release note for the version comes with the download."
+      ],
+      "id": "sony-srg-x400",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "SRG-X120/X400 Operating Instructions 5-011-250-12(1): Version up (Sony's document, hosted by a reseller)",
+          "url": "https://www.adorama.com/col/productManuals/SOSRGX120W.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "Sony",
+      "downloads": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/srg-x402/downloads",
+      "downloadsNote": "Sony asks you to accept a licence before the download.",
+      "family": "SRG-X402",
+      "how": [
+        "In the camera's web page, Version up: under Firmware upgrade, Choose File, then follow the on-screen instructions.",
+        "Sony's release note for the version comes with the download."
+      ],
+      "id": "sony-srg-x402",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "SRG-X120/X400 Operating Instructions 5-011-250-12(1): Version up (Sony's document, hosted by a reseller)",
+          "url": "https://www.adorama.com/col/productManuals/SOSRGX120W.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "Sony",
+      "downloads": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/srg-x120/downloads",
+      "downloadsNote": "Sony asks you to accept a licence before the download.",
+      "family": "SRG-X120",
+      "how": [
+        "In the camera's web page, Version up: under Firmware upgrade, Choose File, then follow the on-screen instructions.",
+        "Sony's release note for the version comes with the download."
+      ],
+      "id": "sony-srg-x120",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "SRG-X120/X400 Operating Instructions 5-011-250-12(1): Version up (Sony's document, hosted by a reseller)",
+          "url": "https://www.adorama.com/col/productManuals/SOSRGX120W.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "Sony",
+      "downloads": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/brc-x400/downloads",
+      "downloadsNote": "Sony asks you to accept a licence before the download.",
+      "family": "BRC-X400",
+      "how": [
+        "In the camera's web page, Version up: under Firmware upgrade, Choose File, then follow the on-screen instructions.",
+        "Sony's release note for the version comes with the download."
+      ],
+      "id": "sony-brc-x400",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "SRG-X120/X400 Operating Instructions 5-011-250-12(1): Version up (Sony's document, hosted by a reseller)",
+          "url": "https://www.adorama.com/col/productManuals/SOSRGX120W.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "Sony",
+      "downloads": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/brc-x401/downloads",
+      "downloadsNote": "Sony asks you to accept a licence before the download.",
+      "family": "BRC-X401",
+      "how": [
+        "In the camera's web page, Version up: under Firmware upgrade, Choose File, then follow the on-screen instructions.",
+        "Sony's release note for the version comes with the download."
+      ],
+      "id": "sony-brc-x401",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "SRG-X120/X400 Operating Instructions 5-011-250-12(1): Version up (Sony's document, hosted by a reseller)",
+          "url": "https://www.adorama.com/col/productManuals/SOSRGX120W.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "Sony",
+      "downloads": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/srg-a40/downloads",
+      "downloadsNote": "Sony asks you to accept a licence before the download.",
+      "family": "SRG-A40",
+      "how": [
+        "Follow the steps Sony publishes with the download."
+      ],
+      "id": "sony-srg-a40",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "Sony UK: SRG-A40 downloads",
+          "url": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/srg-a40/downloads"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "Sony",
+      "downloads": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/srg-a12/downloads",
+      "downloadsNote": "Sony asks you to accept a licence before the download.",
+      "family": "SRG-A12",
+      "how": [
+        "Follow the steps Sony publishes with the download."
+      ],
+      "id": "sony-srg-a12",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "Sony UK: SRG-A12 downloads",
+          "url": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/srg-a12/downloads"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "Sony",
+      "downloads": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/srg-300se/downloads",
+      "downloadsNote": "Sony asks you to accept a licence before the download.",
+      "family": "SRG-300SE",
+      "how": [
+        "Follow the steps Sony publishes with the download."
+      ],
+      "id": "sony-srg-300se",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "Sony UK: SRG-300SE downloads",
+          "url": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/srg-300se/downloads"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "Sony",
+      "downloads": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/brc-am7/downloads",
+      "downloadsNote": "Sony asks you to accept a licence before the download.",
+      "family": "BRC-AM7",
+      "how": [
+        "Follow the steps Sony publishes with the download."
+      ],
+      "id": "sony-brc-am7",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "Sony UK: BRC-AM7 downloads",
+          "url": "https://www.sony.co.uk/electronics/support/ptz-and-remote-cameras-ptz-cameras/brc-am7/downloads"
+        },
+        {
+          "kind": "vendor",
+          "title": "BRC-AM7 CGI command list (Japanese): versionup",
+          "url": "https://www.sony.jp/remote-camera/download/pdf/BRC-AM7/5066066011.pdf"
+        }
+      ],
+      "upload": "Sony's CGI command list documents an upload to /update/versionup.cgi (application/octet-stream, as FirmwareFile), without its method or what it answers.",
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "Sony",
+      "downloads": "https://www.sony.co.uk/electronics/support/interchangeable-lens-camcorders-ilme-series/ilme-fr7/downloads",
+      "downloadsNote": "Sony asks you to accept a licence before the download.",
+      "family": "ILME-FR7, FR7K",
+      "how": [
+        "In the Web App: Settings > Maintenance > Information > Camera > Version Up > Choose File (the .dat file)."
+      ],
+      "id": "sony-fr7",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "Sony UK: ILME-FR7 downloads and update steps",
+          "url": "https://www.sony.co.uk/electronics/support/interchangeable-lens-camcorders-ilme-series/ilme-fr7/downloads"
+        },
+        {
+          "kind": "vendor",
+          "title": "ILME-FR7 CGI command list v4.00 (Japanese): versionup",
+          "url": "https://www.sony.jp/ls-camera/download/pdf/FR7/ILME-FR7_CGI_command_list_v4.00.pdf"
+        }
+      ],
+      "upload": "Sony's CGI command list documents uploads to /update/versionup.cgi (the camera, as FirmwareFile) and /update/lens_versionup.cgi (the lens, as LensFirmwareFile), without their method or what they answer.",
+      "warnings": [
+        "It takes about 30 minutes. Take the lens off and release the pan/tilt lock first, and set SETUP switch 4 to OFF.",
+        "Power it from the AC adapter or PoE++. Don't switch it off, unplug it or close the browser while it runs: the POWER lamp blinks yellow, and it restarts itself when done.",
+        "The camera refuses an update it doesn't need."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/p100-firmware-update/",
+      "downloadsNote": null,
+      "family": "P100",
+      "how": [
+        "Follow the steps on BirdDog's page and in the download."
+      ],
+      "id": "birddog-p100",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog: P100 firmware update",
+          "url": "https://birddog.tv/p100-firmware-update/"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/p110-firmware-update/",
+      "downloadsNote": null,
+      "family": "P110",
+      "how": [
+        "Follow the steps on BirdDog's page and in the download."
+      ],
+      "id": "birddog-p110",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog: P110 firmware update",
+          "url": "https://birddog.tv/p110-firmware-update/"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/p120-firmware-update/",
+      "downloadsNote": null,
+      "family": "P120",
+      "how": [
+        "Follow the steps on BirdDog's page and in the download."
+      ],
+      "id": "birddog-p120",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog: P120 firmware update",
+          "url": "https://birddog.tv/p120-firmware-update/"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/p200-firmware-update/",
+      "downloadsNote": null,
+      "family": "P200",
+      "how": [
+        "Follow the steps on BirdDog's page and in the download."
+      ],
+      "id": "birddog-p200",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog: P200 firmware update",
+          "url": "https://birddog.tv/p200-firmware-update/"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/p240-firmware-update/",
+      "downloadsNote": null,
+      "family": "P240",
+      "how": [
+        "Follow the steps on BirdDog's page and in the download."
+      ],
+      "id": "birddog-p240",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog: P240 firmware update",
+          "url": "https://birddog.tv/p240-firmware-update/"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/p400-firmware-update/",
+      "downloadsNote": null,
+      "family": "P400",
+      "how": [
+        "Follow the steps on BirdDog's page and in the download."
+      ],
+      "id": "birddog-p400",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog: P400 firmware update",
+          "url": "https://birddog.tv/p400-firmware-update/"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/p4k-firmware-update/",
+      "downloadsNote": null,
+      "family": "P4K",
+      "how": [
+        "Follow the steps on BirdDog's page and in the download."
+      ],
+      "id": "birddog-p4k",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog: P4K firmware update",
+          "url": "https://birddog.tv/p4k-firmware-update/"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/x1-firmware-update/",
+      "downloadsNote": null,
+      "family": "X1",
+      "how": [
+        "In BirdUI: SYSTEM > System Update > CHOOSE FILE…, then UPDATE.",
+        "Follow the Firmware Upgrade Instructions in the download folder."
+      ],
+      "id": "birddog-x1",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog: X1 firmware update",
+          "url": "https://birddog.tv/x1-firmware-update/"
+        },
+        {
+          "kind": "vendor",
+          "title": "BirdDog BirdUI User Guide: System Update",
+          "url": "https://birddog.tv/wp-content/uploads/2024/04/BirdDog_BirdUI_User-Guide.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "Do the steps on BirdDog's page in order: for 6.3.102 the update fails if step 1 is skipped.",
+        "Once updated, the camera cannot be downgraded by hand (BirdDog's Firmware Rollback Protection)."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/x1ultra-firmware-update/",
+      "downloadsNote": null,
+      "family": "X1 Ultra",
+      "how": [
+        "In BirdUI: SYSTEM > System Update > CHOOSE FILE…, then UPDATE.",
+        "Follow the Firmware Upgrade Instructions in the download folder."
+      ],
+      "id": "birddog-x1-ultra",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog BirdUI User Guide: System Update",
+          "url": "https://birddog.tv/wp-content/uploads/2024/04/BirdDog_BirdUI_User-Guide.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/x4u-firmware-update/",
+      "downloadsNote": null,
+      "family": "X4 Ultra",
+      "how": [
+        "In BirdUI: SYSTEM > System Update > CHOOSE FILE…, then UPDATE.",
+        "Follow the Firmware Upgrade Instructions in the download folder."
+      ],
+      "id": "birddog-x4-ultra",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog BirdUI User Guide: System Update",
+          "url": "https://birddog.tv/wp-content/uploads/2024/04/BirdDog_BirdUI_User-Guide.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/x4eultra-firmware-update/",
+      "downloadsNote": null,
+      "family": "X4E Ultra",
+      "how": [
+        "In BirdUI: SYSTEM > System Update > CHOOSE FILE…, then UPDATE.",
+        "Follow the Firmware Upgrade Instructions in the download folder."
+      ],
+      "id": "birddog-x4e-ultra",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog BirdUI User Guide: System Update",
+          "url": "https://birddog.tv/wp-content/uploads/2024/04/BirdDog_BirdUI_User-Guide.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/x5ultra-firmware-update/",
+      "downloadsNote": null,
+      "family": "X5 Ultra",
+      "how": [
+        "In BirdUI: SYSTEM > System Update > CHOOSE FILE…, then UPDATE.",
+        "Follow the Firmware Upgrade Instructions in the download folder."
+      ],
+      "id": "birddog-x5-ultra",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog BirdUI User Guide: System Update",
+          "url": "https://birddog.tv/wp-content/uploads/2024/04/BirdDog_BirdUI_User-Guide.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/max-firmware-update/",
+      "downloadsNote": null,
+      "family": "MAX",
+      "how": [
+        "In BirdUI: SYSTEM > System Update > CHOOSE FILE…, then UPDATE.",
+        "Follow the Firmware Upgrade Instructions in the download folder."
+      ],
+      "id": "birddog-max",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog BirdUI User Guide: System Update",
+          "url": "https://birddog.tv/wp-content/uploads/2024/04/BirdDog_BirdUI_User-Guide.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/makilive-firmware-update/",
+      "downloadsNote": null,
+      "family": "MAKI Live",
+      "how": [
+        "In BirdUI: SYSTEM > System Update > CHOOSE FILE…, then UPDATE.",
+        "Follow the Firmware Upgrade Instructions in the download folder."
+      ],
+      "id": "birddog-maki-live",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog BirdUI User Guide: System Update",
+          "url": "https://birddog.tv/wp-content/uploads/2024/04/BirdDog_BirdUI_User-Guide.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/makiultra12x-firmware-update/",
+      "downloadsNote": null,
+      "family": "MAKI Ultra 12x",
+      "how": [
+        "In BirdUI: SYSTEM > System Update > CHOOSE FILE…, then UPDATE.",
+        "Follow the Firmware Upgrade Instructions in the download folder."
+      ],
+      "id": "birddog-maki-ultra-12x",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog BirdUI User Guide: System Update",
+          "url": "https://birddog.tv/wp-content/uploads/2024/04/BirdDog_BirdUI_User-Guide.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "BirdDog",
+      "downloads": "https://birddog.tv/makiultra20x-firmware-update/",
+      "downloadsNote": null,
+      "family": "MAKI Ultra 20x",
+      "how": [
+        "In BirdUI: SYSTEM > System Update > CHOOSE FILE…, then UPDATE.",
+        "Follow the Firmware Upgrade Instructions in the download folder."
+      ],
+      "id": "birddog-maki-ultra-20x",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog BirdUI User Guide: System Update",
+          "url": "https://birddog.tv/wp-content/uploads/2024/04/BirdDog_BirdUI_User-Guide.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "PTZOptics",
+      "downloads": "https://docs.ptzoptics.com/docs/cameras/",
+      "downloadsNote": "Pick the camera, then Firmware: each model has its own page.",
+      "family": "G3 cameras: Move 4K, Move SE, Link 4K, Studio Pro",
+      "how": [
+        "In the camera's web page, System Settings: Check Firmware Version, then Apply, downloads and installs the latest.",
+        "Or, from a file: open Advanced in System Settings, Select File (the .img), then Apply."
+      ],
+      "id": "ptzoptics-g3",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "PTZOptics docs: Move 4K firmware instructions",
+          "url": "https://docs.ptzoptics.com/docs/cameras/move-4k/firmware/instructions/"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "The upload takes 1 to 3 minutes, then the camera says it is installing: give it another 3 to 6 minutes before reloading the page."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "PTZOptics",
+      "downloads": "https://docs.ptzoptics.com/docs/cameras/g2-legacy/firmware/",
+      "downloadsNote": "SDI/NDI and USB cameras have separate pages.",
+      "family": "G2 cameras: 12X, 20X and 30X SDI, NDI and USB, ZCAM",
+      "how": [
+        "With PTZOptics' Upgrade Tool: v2.8 on Windows; the Mac tool, v2.7, cannot back up or restore, and on Big Sur cannot search, so type the address in.",
+        "Some G2 cameras update over the network, some over USB, some both: the instructions list which."
+      ],
+      "id": "ptzoptics-g2",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "PTZOptics docs: SDI/NDI G2 firmware",
+          "url": "https://docs.ptzoptics.com/docs/cameras/g2-legacy/firmware/sdi-ndi-g2/"
+        },
+        {
+          "kind": "vendor",
+          "title": "PTZOptics Firmware Upgrade Instructions, rev 1.4",
+          "url": "https://docs.ptzoptics.com/docs/cameras/g2-legacy/firmware/sdi-ndi-g2/instructions/"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "Use firmware for the right camera type: an SoC version starting with 6 is PoE, with 7 non-PoE. PTZOptics warns the wrong firmware may permanently damage the camera.",
+        "There are two Upgrade Tool v2.8C builds, Old MAC (D4:E0:8E…) and New MAC (DC:ED:84…). The wrong one changes the camera's MAC address.",
+        "A backup holds that camera's MAC address, serial number and focus data: never restore it to another camera.",
+        "The camera may need a focus calibration afterwards. A file saved twice as \"… (1)\" must be renamed before it will load."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Canon",
+      "downloads": "https://www.canon-europe.com/support/firmware/ptz/",
+      "downloadsNote": null,
+      "family": "CR-N700, N500, N400, N350, N300, N100, CR-X300",
+      "how": [
+        "Back the settings up first: System > Maintenance > Backup/Restore, Execute, saves a DAT file.",
+        "System > Maintenance > Firmware Update: choose the .bin from the extracted download, then Execute and OK.",
+        "Afterwards, restore the backup on the same Backup/Restore page."
+      ],
+      "id": "canon-cr",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "Canon Japan: CR-N500 firmware, with the remote camera update procedure (Japanese)",
+          "url": "https://canon.jp/support/software/os/select/remotecamera/crn500-firm"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "Don't switch the camera off during the update: Canon says it can cause a fault."
+      ],
+      "webPath": "/admin/system/firmup"
+    },
+    {
+      "brand": "Lumens",
+      "downloads": "https://www.mylumens.com/en/Downloads?keyword2=VC-A71P&id=2",
+      "downloadsNote": null,
+      "family": "VC-A71P, VC-A71PN",
+      "how": [
+        "Log in to the camera's web page: Maintenance > Choose files… > Submit.",
+        "When it is done, Lumens asks for a factory reset: Maintenance > System Service > Reset."
+      ],
+      "id": "lumens-vc-a71p",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "FW006: VC-A61P/VC-A71P FW Update Manual 1.2",
+          "url": "https://www.mylumens.com/Download/FW006%20-%20VC-A61P_VC-A71P%20FW%20Update%20Manual_1_2.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 2 minutes. Don't stop it: Lumens warns that can leave the unit not working.",
+        "If it says the update failed, run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Lumens",
+      "downloads": "https://www.mylumens.com/en/Downloads",
+      "downloadsNote": "Search for the model.",
+      "family": "VC-A61P",
+      "how": [
+        "Log in to the camera's web page: Maintenance > Choose files… > Submit.",
+        "When it is done, Lumens asks for a factory reset: Maintenance > System Service > Reset."
+      ],
+      "id": "lumens-vc-a61p",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "FW006: VC-A61P/VC-A71P FW Update Manual 1.2",
+          "url": "https://www.mylumens.com/Download/FW006%20-%20VC-A61P_VC-A71P%20FW%20Update%20Manual_1_2.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes about 2 minutes. Don't stop it: Lumens warns that can leave the unit not working.",
+        "If it says the update failed, run it again."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "AVer",
+      "downloads": "https://www.aver.com/download-center",
+      "downloadsNote": "Search for the model.",
+      "family": "PTZ310, PTZ330 (N and V2)",
+      "how": [
+        "In the camera's web page: System > Upgrade firmware, Browse to the file, then Upgrade. Refresh the browser afterwards."
+      ],
+      "id": "aver-ptz310-330",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "PTZ310V2 Series User Manual (2026.5): Upgrade Firmware, and the CGI list, p. 55",
+          "url": "https://averusa.com/pro-av/downloads/user-manual/PTZ310V2+Series_UM_EN_2026.5.pdf"
+        }
+      ],
+      "upload": "AVer's PTZ310V2 manual gives an HTTP upload: curl -X POST --user NAME:PASSWORD -F file1=@FILE http://CAMERA/system/ (multipart). What it answers is not documented.",
+      "warnings": [
+        "The network connection drops during the update, and the camera restarts itself when it is done."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Marshall",
+      "downloads": "https://marshall-usa.com/discontinued/cameras/CV605-BK-WH.php",
+      "downloadsNote": null,
+      "family": "CV605",
+      "how": [
+        "In the camera's web page: Configurations > Update > Choose File, the ARM file (CV605_…_ARM_…mrg) first, then Upgrade. The camera restarts.",
+        "Close the page, log in again, and do the same with the second file (D_CV605_…mrg)."
+      ],
+      "id": "marshall-cv605",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "Marshall: CV605 PTZ firmware update instructions",
+          "url": "https://marshall-usa.com/pdf/CV605-PTZ-firmware-update-instructions.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "Two files, in that order, with the restart between them."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "JVC",
+      "downloads": "https://support.jvc.com/pro/firmwareupgrade/versionentry.jsp?modelId=86",
+      "downloadsNote": "JVC asks for the camera's current firmware version first.",
+      "family": "KY-PZ510, KY-PZ510N",
+      "how": [
+        "Follow the instructions JVC publishes with the download."
+      ],
+      "id": "jvc-pz510",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "JVC: KY-PZ510 Firmware Update (v3.0.12 or later), B5A-4617-01",
+          "url": "https://manuals.jvckenwood.com/download/files/B5A-4617-01.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "From v3.0.12, preset files exported on older firmware can't restore preset positions, and files exported on v3.0.12 can't be used on cameras at that version or older."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "JVC",
+      "downloads": "https://support.jvc.com/pro/firmwareupgrade/modellist.jsp",
+      "downloadsNote": "Pick the model on JVC's list.",
+      "family": "KY-PZ100, KY-PZ200(N), KY-PZ400(N)",
+      "how": [
+        "Follow the instructions JVC publishes with the download."
+      ],
+      "id": "jvc-pz",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "JVC: KY-PZ400 and KY-PZ200 Firmware Update notice, B5A-4559-00",
+          "url": "https://manuals.jvckenwood.com/download/files/B5A-4559-00.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [],
+      "webPath": null
+    },
+    {
+      "brand": "Vaddio",
+      "downloads": "https://www.legrandav.com/",
+      "downloadsNote": "Find the camera's product page and open its Resources tab.",
+      "family": "RoboSHOT cameras",
+      "how": [
+        "In the camera's web page, System: Choose File (the firmware ends in .p7m), then Begin Firmware Update.",
+        "Read the Confirm dialog, then Continue. The camera restarts when it is done."
+      ],
+      "id": "vaddio-roboshot",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "RoboSHOT UHD 2.3.0 release notes and update instructions",
+          "url": "https://res.cloudinary.com/iwh/image/upload/q_auto,g_center/assets/1/26/RoboSHOT_UHD_Firmware_Release_Notes_and_Update_Instructions_2.3.0.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "RoboSHOT CAT5 3.2.0 release notes and update instructions",
+          "url": "https://res.cloudinary.com/avd/image/upload/v132245212/Resources/Vaddio/Cameras/Firmware/RoboSHOT_CAT5_Release_Notes_and_Update_Instructions_3.2.0.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "Keep the camera on power and on the network until it finishes: an interrupted update can leave it unusable.",
+        "It can take up to 5 minutes."
+      ],
+      "webPath": null
+    },
+    {
+      "brand": "Datavideo",
+      "downloads": "https://www.datavideo.com/product/PTC-140T",
+      "downloadsNote": null,
+      "family": "PTC-140, PTC-140T, PTC-140NDI",
+      "how": [
+        "In the camera's web page: System Configure > Update, Select File, then Upgrade."
+      ],
+      "id": "datavideo-ptc140",
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "PTC-140 instruction manual, ch. 9: Firmware Update",
+          "url": "http://resource.datavideo.com/Instruction_Manuals/PTC-140_E7_A5_EN.pdf"
+        }
+      ],
+      "upload": null,
+      "warnings": [
+        "It takes a few minutes and keeps the settings. Don't interrupt it once it has started: that can leave the camera unresponsive."
+      ],
+      "webPath": null
+    }
+  ],
+  "logins": [
+    {
+      "brand": "Panasonic",
+      "changeAtFirstLogin": false,
+      "family": "AW-HE40, AW-HE130",
+      "firmware": null,
+      "id": "panasonic-he40-he130",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "12345",
+        "username": "admin"
+      },
+      "notes": [
+        "User authentication is off from the factory on the AW-HE40, so it may not ask for a login at all.",
+        "An AW-RP50 controller has to be given the same login as the camera; one on firmware 3.30.01 or older cannot connect once authentication is on.",
+        "The AW-HE130 reminds you to change the password while the factory one is in use (from a third-party copy of its manual)."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "Panasonic FAQ: User Authentication Function",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/faq/EN/remcam/30_.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-HE130 firmware update procedure, step 6",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/he130/he130_update_e_newtek.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Panasonic",
+      "changeAtFirstLogin": false,
+      "family": "AW-UE70, AW-UN70",
+      "firmware": null,
+      "id": "panasonic-ue70-un70",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "12345",
+        "username": "admin"
+      },
+      "notes": [],
+      "sources": [
+        {
+          "kind": "vendorExcerpt",
+          "title": "AW-UE70 firmware update procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue70/ue70_update_newtek_e.pdf"
+        },
+        {
+          "kind": "vendorExcerpt",
+          "title": "AW-UN70 firmware update procedure (Sep 2022)",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/un70/un70_update_e.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Panasonic",
+      "changeAtFirstLogin": false,
+      "family": "AW-UE4, UE20/HE20, UE40, UE50, UE80, UE100, UE150, UE160",
+      "firmware": null,
+      "id": "panasonic-initial-account",
+      "lockout": "Not documented. A wrong login is written to the camera's event log (W1302, with the user and the address).",
+      "login": {
+        "kind": "create",
+        "username": null
+      },
+      "notes": [
+        "The first visit to its web page opens an initial account screen, and its network functions do not work until the account exists.",
+        "A Panasonic RP-series controller can find the camera but not control it until then (AW-UE160).",
+        "Panasonic's Easy IP Setup Tool Plus can create the account too.",
+        "The AW-UE160 asks for 8 or more characters of 3 kinds out of upper case, lower case, digits and symbols, but lets you go on after a warning.",
+        "A forgotten account: the AW-UE160's service switch Initialization 1 clears its users and hosts.",
+        "Panasonic's update procedures show admin / 12345 only as an example of what to type. For the UE20, UE40, UE50 and UE80 only excerpts of them were checked."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "AW-UE160 Operating Instructions, p. 52: Setting the initial account",
+          "url": "https://pro-av.panasonic.net/manual/pdf/AW-UE160P.PJ_simple(DVQX2340YA)_E.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-UE4 Operating Instructions, p. 20",
+          "url": "https://pro-av.panasonic.net/manual/pdf/AW-UE4KG_WG_Operation(DVQP2109ZA)_E.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AW-UE150 firmware update procedure, p. 1",
+          "url": "https://eww.pass.panasonic.co.jp/pro-av/support/content/download/EN/ep2main/soft/ue150/ue150_update_e.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Sony",
+      "changeAtFirstLogin": true,
+      "family": "BRC-X400/X401, SRG-X400/X402/201M2, SRG-X120/HD1M2",
+      "firmware": null,
+      "id": "sony-x400-x120",
+      "lockout": "Brute-force protection covers the web page and RTSP: after a set number of wrong logins it blocks the address, until a timer runs out or for good, as set. A reboot clears the list. The factory count is not stated.",
+      "login": {
+        "kind": "factory",
+        "password": "Admin_1234",
+        "username": "admin"
+      },
+      "notes": [
+        "The new user name must be 5 to 16 characters and the password 8 to 64.",
+        "From firmware 3.00 the factory password cannot be kept as the new one (from a third-party copy of the release note)."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "SRG-X120/X400 Operating Instructions 5-011-250-12(1), pp. 10, 58, 87 (Sony's document, hosted by a reseller)",
+          "url": "https://www.adorama.com/col/productManuals/SOSRGX120W.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Sony",
+      "changeAtFirstLogin": true,
+      "family": "SRG-A40, SRG-A12",
+      "firmware": null,
+      "id": "sony-a40-a12",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "",
+        "username": "admin"
+      },
+      "notes": [
+        "The first login makes you set the administrator's password, of 8 to 64 characters."
+      ],
+      "sources": [
+        {
+          "kind": "vendorExcerpt",
+          "title": "SRG-A40/A12 VISCA/CGI Command List v4.0",
+          "url": "https://pro.sony/support/res/manuals/5053/f48354480e724f0aef3d45d2e1eeab63/50531551M.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Sony",
+      "changeAtFirstLogin": true,
+      "family": "ILME-FR7, FR7K, BRC-AM7",
+      "firmware": null,
+      "id": "sony-fr7-am7",
+      "lockout": "Brute-force protection is on from the factory: 8 wrong logins block the address for 60 seconds (adjustable from 30 to 86,400).",
+      "login": {
+        "kind": "factory",
+        "password": "",
+        "username": "admin"
+      },
+      "notes": [
+        "The blank login is temporary: the first browser login makes you create the administrator's name and a password of 8 to 64 characters with upper case, lower case and a digit.",
+        "The BRC-AM7 asks again if its backup battery runs completely flat."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "ILME-FR7 Help Guide: Initial setup of the unit",
+          "url": "https://helpguide.sony.net/ilc/2240/v1/en/contents/TP1000673409.html"
+        },
+        {
+          "kind": "vendor",
+          "title": "ILME-FR7 Help Guide: Brute Force Attack Protection",
+          "url": "https://helpguide.sony.net/ilc/2240/v1/en/contents/TP1000669775.html"
+        },
+        {
+          "kind": "vendor",
+          "title": "BRC-AM7 Help Guide: Brute Force Attack Protection",
+          "url": "https://helpguide.sony.net/rc/brc-am7/v1/en/contents/wm_brute_protection.html"
+        }
+      ]
+    },
+    {
+      "brand": "BirdDog",
+      "changeAtFirstLogin": false,
+      "family": "P100, P200, P400, P4K",
+      "firmware": null,
+      "id": "birddog-p",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "birddog",
+        "username": ""
+      },
+      "notes": [
+        "There is no user name: the web page asks for the password only.",
+        "NDI Studio Monitor's settings dialog takes the same password."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog P100 User Guide, p. 25: Password Management",
+          "url": "https://birddog.tv/wp-content/uploads/2022/01/BirdDog_P100_User-Guide_231026.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "BirdDog BirdUI User Guide: Default Password",
+          "url": "https://birddog.tv/wp-content/uploads/2024/04/BirdDog_BirdUI_User-Guide.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "BirdDog",
+      "changeAtFirstLogin": true,
+      "family": "X1, X1 Ultra, X4 Ultra, MAKI Ultra",
+      "firmware": null,
+      "id": "birddog-x",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "birddog",
+        "username": ""
+      },
+      "notes": [
+        "The X4 Ultra makes you set your own password at the first login, and again after a reset. For the X1 and MAKI Ultra only an excerpt says the same.",
+        "The IR remote's *, #, MANUAL sequence restores the factory address (192.168.100.100) and password."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "BirdDog X4 Ultra manual: setup, and Forgotten IP address or login password",
+          "url": "https://birddog.tv/wp-content/uploads/2024/11/BirdDog-X4-Ultra-Manual.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "BirdDog X1 / X1 Ultra manual",
+          "url": "https://birddog.tv/wp-content/uploads/2024/04/BirdDog-X1-X1-Ultra_manual_02-05-2025.pdf"
+        },
+        {
+          "kind": "vendorExcerpt",
+          "title": "BirdDog knowledge base: factory reset, MAKI Ultra",
+          "url": "https://desk.birddog.tv/portal/en/kb/articles/factory-reset-maki-ultra"
+        }
+      ]
+    },
+    {
+      "brand": "PTZOptics",
+      "changeAtFirstLogin": false,
+      "family": "G2 cameras: 12X, 20X and 30X SDI, NDI and USB, ZCAM",
+      "firmware": null,
+      "id": "ptzoptics-g2",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "admin",
+        "username": "admin"
+      },
+      "notes": [
+        "PTZOptics lists every G2 under CVE-2025-35452, a web password shared across cameras, until that password is changed.",
+        "Older G2 firmware also has SSH and Telnet logins with fixed passwords (CVE-2025-35451), fixed in 12X 6.3.34, 20X 6.3.20, 30X 6.3.30 and USB 6.2.81 and 6.2.73."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "PTZOptics docs: I can't log in",
+          "url": "https://docs.ptzoptics.com/articles/troubleshooting/cant-log-in"
+        },
+        {
+          "kind": "vendor",
+          "title": "PTZOptics: known vulnerabilities and fixes (CVE-2025-35451, CVE-2025-35452)",
+          "url": "https://ptzoptics.com/known-vulnerabilities-and-fixes"
+        }
+      ]
+    },
+    {
+      "brand": "PTZOptics",
+      "changeAtFirstLogin": false,
+      "family": "G3 cameras: Move 4K, Move SE, Link 4K, Studio Pro",
+      "firmware": "Before the early-2025 security update",
+      "id": "ptzoptics-g3-before-fix",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "admin",
+        "username": "admin"
+      },
+      "notes": [],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "PTZOptics docs: I can't log in",
+          "url": "https://docs.ptzoptics.com/articles/troubleshooting/cant-log-in"
+        },
+        {
+          "kind": "vendor",
+          "title": "PTZOptics: known vulnerabilities and fixes (CVE-2025-35451, CVE-2025-35452)",
+          "url": "https://ptzoptics.com/known-vulnerabilities-and-fixes"
+        }
+      ]
+    },
+    {
+      "brand": "PTZOptics",
+      "changeAtFirstLogin": false,
+      "family": "G3 cameras: Move 4K, Move SE, Link 4K, Studio Pro",
+      "firmware": "From the early-2025 security update: 4K G3 12X 0.0.58, 20X 0.0.85, 30X 2.0.64; Link 4K 0.0.63, 0.0.89, 2.0.71; Move SE 9.1.43, 9.1.32, 9.1.33; Studio Pro 9.0.41",
+      "id": "ptzoptics-g3-after-fix",
+      "lockout": null,
+      "login": {
+        "kind": "create",
+        "username": "admin"
+      },
+      "notes": [
+        "The first login, and the first after a password reset, makes you set admin's password; it cannot be admin.",
+        "There is a guest account too; its password cannot be guest.",
+        "The IR remote's network reset brings the setup screen back and switches the camera to DHCP."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "PTZOptics docs: I can't log in",
+          "url": "https://docs.ptzoptics.com/articles/troubleshooting/cant-log-in"
+        },
+        {
+          "kind": "vendor",
+          "title": "PTZOptics: known vulnerabilities and fixes (CVE-2025-35451, CVE-2025-35452)",
+          "url": "https://ptzoptics.com/known-vulnerabilities-and-fixes"
+        }
+      ]
+    },
+    {
+      "brand": "Canon",
+      "changeAtFirstLogin": false,
+      "family": "CR-N100, CR-N300, CR-N500",
+      "firmware": null,
+      "id": "canon-crn100-500",
+      "lockout": "Not documented. Only one administrator can be logged in at a time.",
+      "login": {
+        "kind": "create",
+        "username": null
+      },
+      "notes": [
+        "Canon's Camera Search Tool or the browser opens Default Settings (1/2), where you name the administrator and set its password.",
+        "Controllers log in as an Authorized User; guests need no login. RTSP has its own authentication setting, and NDI, RTMP and SRT are not covered by the user accounts.",
+        "A forgotten password needs a factory reset, which also clears the network settings."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "CR-N500/CR-N300 Setup Guide (firmware 1.7.0), pp. 15–16 and 76–77",
+          "url": "https://gdlp01.c-wss.com/gds/4/0300048394/03/crn500-300-sg-en.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "CR-N100 Setup Guide",
+          "url": "https://gdlp01.c-wss.com/gds/7/0300047877/04/crn100-sg-en.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Canon",
+      "changeAtFirstLogin": false,
+      "family": "CR-N700, CR-X300, CR-X500",
+      "firmware": null,
+      "id": "canon-crn700-crx",
+      "lockout": null,
+      "login": {
+        "kind": "create",
+        "username": null
+      },
+      "notes": [
+        "The same Initial Camera Settings step, per an excerpt of the CR-X300 manual; the CR-N700 and CR-X500 manuals were not read in full."
+      ],
+      "sources": [
+        {
+          "kind": "vendorExcerpt",
+          "title": "CR-X300 User Manual, p. 26: Initial Camera Settings",
+          "url": "https://gdlp01.c-wss.com/gds/3/0300043553/06/crx300-um-en.pdf"
+        },
+        {
+          "kind": "vendorExcerpt",
+          "title": "CR-N700 Setup Guide",
+          "url": "https://gdlp01.c-wss.com/gds/1/0300045551/03/crn7sg-e.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Lumens",
+      "changeAtFirstLogin": false,
+      "family": "VC-A50P, VC-A61P, VC-A71P/A71PN, VC-TR1",
+      "firmware": null,
+      "id": "lumens-vc",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "9999",
+        "username": "admin"
+      },
+      "notes": [
+        "Lumens asks you to change it at the first login.",
+        "RTSP uses the web account. RTSP authentication is off from the factory, except on the VC-TR1.",
+        "The VC-A50P firmware manual says new firmware changed the default password, then lists admin / 9999 again."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "VC-A71P/A71PN User Manual (2024-02-05), p. 31",
+          "url": "https://www.mylumens.com/Download/VC-A71P_A71PN-User_Manual-English%2020240205.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "VC-A61P User Manual",
+          "url": "https://www.mylumens.com/Download/VC-A61P_User_Manual-English_2020-0113.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "VC-A50P Firmware Update Manual, 3.2 and 3.5",
+          "url": "https://www.mylumens.com/Download/FW017%20-%20VC-A50P%20FW%20Update%20Manual.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "AVer",
+      "changeAtFirstLogin": false,
+      "family": "PTC500, PTC500S",
+      "firmware": null,
+      "id": "aver-ptc500",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "admin",
+        "username": ""
+      },
+      "notes": [
+        "The web page asks for a password only.",
+        "The remote's hot key sets it back to admin."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "PTC500S User Manual v1.0.2, pp. 14 and 41",
+          "url": "https://communication.aver.com/DownloadFile.aspx?n=5056%7CB527A283-825A-40E6-B43D-641739795372&t=ServiceDownload"
+        }
+      ]
+    },
+    {
+      "brand": "AVer",
+      "changeAtFirstLogin": true,
+      "family": "TR310, TR311, TR313, TR331, TR333 (and their V2), PTZ310, PTZ330",
+      "firmware": null,
+      "id": "aver-tr-ptz",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "admin",
+        "username": "admin"
+      },
+      "notes": [
+        "The first web login makes you change both the user name and the password.",
+        "AVer's PTZ Management software starts as admin / admin too, and is changed the same way."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "TR Series / TR311(N) User Manual, pp. 31–32",
+          "url": "https://www.averusa.com/pro-av/downloads/user-manual/TR%20Series+TR311(N)_User%20Manual_En_v1-2021.04.23.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "AVer: PTZ, TR and TR3xxV2 camera integration with Echo360, step 2",
+          "url": "https://www.averusa.com/pro-av/downloads/how-to/PTZ-TR%20and%20New%20TR3xx%20and%20TR3xxV2%20Camera%20Integration%20with%20Echo360.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Marshall",
+      "changeAtFirstLogin": false,
+      "family": "CV620, CV630, CV730 (IP, NDI and ND3 versions)",
+      "firmware": null,
+      "id": "marshall-cv",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "9999",
+        "username": "admin"
+      },
+      "notes": [
+        "Marshall advises changing it.",
+        "Read in the CV730-NDI manual; the CV620 and CV630 manuals were checked as excerpts."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "CV730-NDI manual, p. 17",
+          "url": "https://marshall-usa.com/pdf/CV730-NDI-manual.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "JVC",
+      "changeAtFirstLogin": false,
+      "family": "KY-PZ100",
+      "firmware": null,
+      "id": "jvc-pz100",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "0000",
+        "username": "jvc"
+      },
+      "notes": [
+        "JVC asks you to change it at the first login."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "KY-PZ100 instructions (B5A-1715-01): Live View login",
+          "url": "https://manuals.jvckenwood.com/download/files/B5A-1715-01.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "JVC",
+      "changeAtFirstLogin": true,
+      "family": "KY-PZ200N, KY-PZ400N, KY-PZ510N",
+      "firmware": null,
+      "id": "jvc-pz-n",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "0000",
+        "username": "jvc"
+      },
+      "notes": [
+        "A reset returns the camera to 192.168.0.10 and jvc / 0000."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "KY-PZ200N/PZ400N instructions (B5A-4102-10), p. 25",
+          "url": "https://manuals.jvckenwood.com/download/files/B5A-4102-10.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "KY-PZ510N instructions (B5A-4258-10): troubleshooting",
+          "url": "https://manuals.jvckenwood.com/download/files/B5A-4258-10.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Vaddio",
+      "changeAtFirstLogin": false,
+      "family": "RoboSHOT cameras",
+      "firmware": "Before RoboSHOT CAT5 3.2.0 and RoboSHOT UHD 2.1.0 (December 2019)",
+      "id": "vaddio-before-2019",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "password",
+        "username": "admin"
+      },
+      "notes": [
+        "There is a second account, user, with the same password.",
+        "Telnet uses the admin account."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "Vaddio Configuration and Administration Guide (999-9960-100), p. 9",
+          "url": "https://res.cloudinary.com/iwh/image/upload/q_auto,g_center/assets/1/26/vaddio_999-9960-100_Administration_Guide.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Vaddio",
+      "changeAtFirstLogin": false,
+      "family": "RoboSHOT cameras, PrimeSHOT 20 HDMI",
+      "firmware": "RoboSHOT 12E/30E CAT5 3.2.0 and later, RoboSHOT 20/40 UHD 2.1.0 and later, PrimeSHOT 20 HDMI 1.2.0 and later",
+      "id": "vaddio-from-2019",
+      "lockout": null,
+      "login": {
+        "kind": "create",
+        "username": "admin"
+      },
+      "notes": [
+        "The Initial Set-Up page asks for admin's password, and asks again after a factory reset.",
+        "Until then HTTP is off: the camera answers on HTTPS only, with a self-signed certificate. Telnet is off and refused until the password is set.",
+        "The IR remote works without a password."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "RoboSHOT CAT5 3.2.0 release notes, p. 1",
+          "url": "https://res.cloudinary.com/avd/image/upload/v132245212/Resources/Vaddio/Cameras/Firmware/RoboSHOT_CAT5_Release_Notes_and_Update_Instructions_3.2.0.pdf"
+        },
+        {
+          "kind": "vendor",
+          "title": "RoboSHOT UHD 2.3.0 release notes, p. 6: Initial Set-Up Procedure",
+          "url": "https://res.cloudinary.com/iwh/image/upload/q_auto,g_center/assets/1/26/RoboSHOT_UHD_Firmware_Release_Notes_and_Update_Instructions_2.3.0.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Datavideo",
+      "changeAtFirstLogin": false,
+      "family": "PTC-140, PTC-140T, PTC-140NDI",
+      "firmware": null,
+      "id": "datavideo-ptc140",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "admin",
+        "username": "admin"
+      },
+      "notes": [
+        "There are User 1 and User 2 accounts as well.",
+        "A button combination restores the login and the address; the factory address is 192.168.5.163."
+      ],
+      "sources": [
+        {
+          "kind": "vendorExcerpt",
+          "title": "PTC-140 instruction manual: web login",
+          "url": "http://resource.datavideo.com/Instruction_Manuals/PTC-140_E7_A5_EN.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Datavideo",
+      "changeAtFirstLogin": false,
+      "family": "PTC-285(T), PTC-305(T)",
+      "firmware": null,
+      "id": "datavideo-ptc285-305",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "admin",
+        "username": "admin"
+      },
+      "notes": [],
+      "sources": [
+        {
+          "kind": "thirdParty",
+          "title": "PTC-305T FAQ (a manual mirror)",
+          "url": "https://www.notice-facile.com/en/manual/1043099/datavideo+ptc-305t"
+        }
+      ]
+    },
+    {
+      "brand": "Avonic",
+      "changeAtFirstLogin": false,
+      "family": "Every Avonic PTZ: CM40, CM70, CM90",
+      "firmware": null,
+      "id": "avonic",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "admin",
+        "username": "admin"
+      },
+      "notes": [
+        "There are user1 and user2 accounts as well (from an excerpt)."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "Avonic knowledge base: Default IP address and access",
+          "url": "https://avonic.freshdesk.com/support/solutions/articles/80000554306-how-to-set-the-ip-address-of-a-camera"
+        }
+      ]
+    },
+    {
+      "brand": "Bolin",
+      "changeAtFirstLogin": false,
+      "family": "Bolin PTZ cameras: EXU248F, the dual-output SDI/IP range, VCC-7",
+      "firmware": null,
+      "id": "bolin",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "admin",
+        "username": "admin"
+      },
+      "notes": [
+        "The EXU248F (A2) and VCC-7 make you change it at the first login.",
+        "ONVIF uses the same login, on port 2000.",
+        "A forgotten password: Bolin support emails a reset code, which gives a temporary password for 24 hours.",
+        "One FEX zoom-camera guide gives admin or 123456 instead (from an excerpt)."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "Bolin EXU248F (A2) User Guide: login and ONVIF",
+          "url": "https://knowledge.bolintechnology.com/exu248fa2userguide"
+        },
+        {
+          "kind": "vendor",
+          "title": "Bolin Outdoor Dual Output IP Camera Network User Guide: login",
+          "url": "https://bolintechnology.com/wp-content/uploads/2023/03/PART-TWO-Outdoor-Dual-Output-IP-camera-Network-User-Guide-02202021.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Zowietek",
+      "changeAtFirstLogin": false,
+      "family": "ZowiePTZ cameras",
+      "firmware": null,
+      "id": "zowietek",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "admin",
+        "username": "admin"
+      },
+      "notes": [
+        "The built-in hotspot's name and password are on the rear label.",
+        "The remote's * + # + Manual restores the login and the address; the fallback address is 192.168.5.168."
+      ],
+      "sources": [
+        {
+          "kind": "vendor",
+          "title": "Zowietek PTZ camera quick start: network note",
+          "url": "https://zowietek.com/wp-content/uploads/2024/08/zowietek-PTZ-Camera-quick-start2.pdf"
+        }
+      ]
+    },
+    {
+      "brand": "Telycam",
+      "changeAtFirstLogin": false,
+      "family": "Drive+ SE DP300-20H",
+      "firmware": null,
+      "id": "telycam-dp300",
+      "lockout": null,
+      "login": {
+        "kind": "factory",
+        "password": "admin",
+        "username": "admin"
+      },
+      "notes": [],
+      "sources": [
+        {
+          "kind": "thirdParty",
+          "title": "Drive+ SE DP300-20H FAQ (a manual mirror)",
+          "url": "https://www.notice-facile.com/en/manual/913514/telycam+drive-se-dp300-20h"
+        }
+      ]
+    }
+  ]
+}

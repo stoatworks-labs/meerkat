@@ -111,7 +111,8 @@ Some brands need the camera's login:
 - **ONVIF** needs it to read the settings as well as to change them. Fill in **User** and
   **Password**, then **Read its current settings**.
 - **BirdDog** and **Panasonic** need it only if authentication is turned on in the camera.
-  **Use the factory login** fills in the maker's default.
+
+**Use this login** under **Factory login** fills in the maker's default (see below).
 
 Press **Apply…**. Before anything is sent, Meerkat checks the new settings: that the
 address is valid and not already used by a camera it can see, that the gateway is inside
@@ -148,6 +149,43 @@ the order the table shows them, one at a time, checking each before the next.
 **Open web UI** opens the camera's own page in your browser, on the port that brand uses.
 A camera on the wrong subnet cannot be opened until this computer can reach it: see the
 next section.
+
+## Factory logins
+
+The detail panel's **Factory login** line says what the selected camera logs in with out of
+the box, from its maker's own documents. Open it for the details:
+
+- **The login**, or **none** when the camera has no factory login and the account is created
+  at the first visit to its web page.
+- **Which firmware** it applies to, when the firmware decides. Both are shown.
+- Whether the camera makes you **replace it at the first login**.
+- **What happens after wrong passwords**, when the maker says. The Sony FR7, for one, blocks
+  an address for 60 seconds after 8 wrong logins.
+- The maker's notes, and the **sources**: each document and the place in it. A source marked
+  **excerpt only** or **not the maker** is weaker.
+
+When the camera needs a login for a change, **Use this login** fills in the fields.
+**Meerkat never tries a login by itself.** It sends one only when you press **Apply…** or
+**Read its current settings**.
+
+When Meerkat does not know the camera's model, or the camera did not say, it lists the
+brand's logins for each model family instead. **Factory logins…** in the sidebar lists
+every brand, with a search by model.
+
+## Firmware updates
+
+Meerkat does not supply or install firmware. The **Firmware update** section points you at
+the maker:
+
+- **The maker's download page** for the model. Some ask you to accept a licence first.
+- **The maker's steps**, and **the maker's warnings**: how long it takes, what not to unplug,
+  the order of files, and what cannot be undone.
+- **Open its firmware page** opens the update page inside the camera's own web UI, for the
+  brands whose procedure shows its address (Canon).
+- The firmware the camera reports, where it reports one. Compare it with the maker's page.
+
+Update one camera at a time, from a computer on its own network, and never during a show.
+**Firmware downloads…** in the sidebar lists every brand's pages.
 
 ## A camera on the wrong subnet
 

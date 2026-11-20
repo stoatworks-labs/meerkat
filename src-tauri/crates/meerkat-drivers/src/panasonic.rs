@@ -43,7 +43,7 @@ use std::time::Duration;
 
 use async_trait::async_trait;
 use md5::{Digest, Md5};
-use meerkat_core::driver::{DefaultLogin, Leg, Level, Result};
+use meerkat_core::driver::{Leg, Level, Result};
 use meerkat_core::net::{self, mask_to_prefix, prefix_to_mask, udp_socket, UdpOpts};
 use meerkat_core::{Caps, Camera, Credentials, Driver, DriverError, DriverInfo, Mac, Method, NetConfig, OpCtx, ScanCtx, WriteOutcome};
 use serde_json::{json, Value};
@@ -385,7 +385,6 @@ impl Driver for Panasonic {
             priority: 70,
             discovery: vec!["UDP broadcast to 10670, answers by broadcast to 10669 — finds cameras on any address on the same wire"],
             sweep: Some("HTTP GET /cgi-bin/aw_cam?cmd=QID (model) and /cgi-bin/getinfo?FILE=1 (MAC)"),
-            default_login: Some(DefaultLogin { username: "admin", password: "12345" }),
             notes: vec![
                 "Cameras accept new settings only in the first 20 minutes after power-on, unless the camera's \"Easy IP Setup accommodate period\" is Unlimited. No answer to a change usually means the window has closed: power-cycle the camera and try again.",
                 "Easy IP is layer 2: it re-addresses a camera on the wrong subnet, but cannot cross a router.",

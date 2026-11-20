@@ -1,5 +1,5 @@
 // The engine's types as they cross the IPC boundary (serde camelCase).
-// Mirrors meerkat-core: model.rs, net.rs, driver.rs, engine.rs.
+// Mirrors meerkat-core: model.rs, net.rs, driver.rs, engine.rs, catalog.rs.
 
 export type Method = 'broadcast' | 'multicast' | 'mdns' | 'unicast';
 
@@ -53,6 +53,8 @@ export interface Camera {
   seen: Sighting[];
   reach: Reach;
   lastSeen: number;
+  /** The catalogue rows about this camera, by id (catalog.rs). */
+  catalog: CatalogMatch;
 }
 
 export interface Credentials {
@@ -78,7 +80,6 @@ export interface DriverInfo {
   priority: number;
   discovery: string[];
   sweep: string | null;
-  defaultLogin: { username: string; password: string } | null;
   notes: string[];
   enabledByDefault: boolean;
   recovery: Recovery | null;
@@ -93,6 +94,66 @@ export interface Recovery {
   steps: string[];
   after: string;
   fallback: string | null;
+}
+
+/**
+ * Rows of one catalogue table. `exact`: for this model, or for every model of
+ * its brand. Not exact: the brand's rows for other models, offered because
+ * Meerkat does not know this one (or the camera did not say).
+ */
+export interface Matched {
+  ids: string[];
+  exact: boolean;
+}
+
+export interface CatalogMatch {
+  logins: Matched;
+  firmware: Matched;
+}
+
+/** vendor: the maker's own document, read. vendorExcerpt: only an excerpt of it checked. thirdParty: a mirror or reseller. */
+export type SourceKind = 'vendor' | 'vendorExcerpt' | 'thirdParty';
+
+export interface Source {
+  title: string;
+  url: string;
+  kind: SourceKind;
+}
+
+/** factory: an empty username means password only; an empty password means blank. create: no factory login, the account is made at first login. */
+export type Login = { kind: 'factory'; username: string; password: string } | { kind: 'create'; username: string | null };
+
+export interface LoginEntry {
+  id: string;
+  brand: string;
+  family: string;
+  /** The firmware this row is for, when the firmware decides. */
+  firmware: string | null;
+  login: Login;
+  changeAtFirstLogin: boolean;
+  lockout: string | null;
+  notes: string[];
+  sources: Source[];
+}
+
+export interface FirmwareEntry {
+  id: string;
+  brand: string;
+  family: string;
+  downloads: string;
+  downloadsNote: string | null;
+  how: string[];
+  /** The camera's own firmware page, to open on its web address. */
+  webPath: string | null;
+  warnings: string[];
+  /** A published network upload: information only, Meerkat does not upload firmware. */
+  upload: string | null;
+  sources: Source[];
+}
+
+export interface Catalog {
+  logins: LoginEntry[];
+  firmware: FirmwareEntry[];
 }
 
 /** A temporary second address on an interface (alias.rs). */

@@ -8,6 +8,8 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+use crate::catalog::CatalogMatch;
+
 /// A 48-bit hardware address. Printed `aa:bb:cc:dd:ee:ff`; parsed from that,
 /// from dashes, or from twelve bare hex digits, in either case.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
@@ -186,6 +188,10 @@ pub struct Camera {
     pub reach: Reach,
     /// Milliseconds since the Unix epoch of the latest sighting.
     pub last_seen: u64,
+    /// Which rows of the catalogue (factory logins, firmware pages) are about
+    /// it. Filled in by the engine from the vendor and model.
+    #[serde(default)]
+    pub catalog: CatalogMatch,
 }
 
 impl Camera {
@@ -210,6 +216,7 @@ impl Camera {
             seen: Vec::new(),
             reach: Reach::Unknown,
             last_seen: 0,
+            catalog: CatalogMatch::default(),
         }
     }
 

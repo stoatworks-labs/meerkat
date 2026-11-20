@@ -1,7 +1,7 @@
 import { useStore, usable } from '../store';
 
 export function Sidebar() {
-  const { ifaces, drivers, scope, setScope, info, setDemo, scanning, aliases, removeAlias, openRecovery } = useStore();
+  const { ifaces, drivers, scope, setScope, info, setDemo, scanning, aliases, removeAlias, openRecovery, openReference } = useStore();
   const isAlias = (name: string, ip: string) => aliases.some((a) => a.iface === name && a.ip === ip);
   const tools = drivers.filter((d) => d.recovery);
   const allIfaces = scope.ifaces === null;
@@ -119,6 +119,22 @@ export function Sidebar() {
           </ul>
         </section>
       )}
+
+      <section>
+        <h2>Reference</h2>
+        <ul className="plain tools">
+          <li>
+            <button type="button" className="link" onClick={() => openReference({ tab: 'logins', brand: null })}>
+              Factory logins…
+            </button>
+          </li>
+          <li>
+            <button type="button" className="link" onClick={() => openReference({ tab: 'firmware', brand: null })}>
+              Firmware downloads…
+            </button>
+          </li>
+        </ul>
+      </section>
 
       <section>
         <h2>Listen for</h2>

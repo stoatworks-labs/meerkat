@@ -36,7 +36,6 @@ get a web UI link.
 | `vendor`, `protocol` | Shown in the UI. Use the protocol's name as the vendor's own tool calls it. |
 | `priority` | Who owns a camera when several drivers see it: vendor drivers 50+, ONVIF 30, mDNS/NDI 10. The higher one wins, and a driver of equal priority cannot take a row from another driver. |
 | `discovery`, `sweep` | One line each, for the driver list: how it finds cameras, and how it probes one address (or `None`). |
-| `default_login` | Pre-fills the login fields. |
 | `notes` | The limits a user needs to know before pressing Apply. Write them as plain sentences. |
 | `enabled_by_default` | Off for anything slow or noisy. |
 | `recovery` | The vendor's own tool for a camera nothing can reach, such as one given a bad address (BirdDog's Neuralyzer), or `None`. It holds the tool's name and download URL, the models it covers, what it does, the steps, what the camera does afterwards, and the `fallback` address it comes back on, which the watch probes as well. The UI links to the tool and then watches for the camera. |
@@ -106,6 +105,46 @@ is not being asked to reach a camera on the wrong subnet. What is left for the d
 
 Never send a write you cannot vouch for. If two dialects exist and neither is confirmed (the
 VHD platform), make the driver discovery-only and say so in `notes`.
+
+## Factory logins and firmware pages
+
+What a brand's cameras log in with out of the box, and where its maker publishes firmware, are
+rows in two tables, not driver code: `meerkat-drivers/src/logins.rs` and `firmware.rs`. The
+shape and the matching rule are in `meerkat-core/src/catalog.rs`. The engine matches every
+camera it finds against them and puts the ids in `Camera::catalog`, and the UI and the CLI show
+the rows. A brand with no driver can still have rows: an ONVIF camera that says it is an AVer
+finds AVer's.
+
+A row names its brand with `vendors`, lower-case pieces of the camera's vendor string, and its
+models with `models`. Each pattern is matched against the start of the model, ignoring case,
+spaces and punctuation, so `AW-UE150` also matches `aw ue150` and `AW-UE150W`:
+
+- `*` stands for anything: `PT*-G3`.
+- A pattern ending in a digit does not run on into more digits: `AW-UE4` is not `AW-UE40`.
+- A trailing `$` means the model ends there: `X1$` is the X1 but not the X1 Ultra.
+- An empty `models` means every model of the brand.
+
+When no pattern matches, or the camera did not report a model, the brand's rows are still
+offered, marked as a hint (`exact: false`).
+
+The rules for a row:
+
+- **Every fact has a source**, with the document and the place in it. Prefer the maker's own
+  document (`SourceKind::Vendor`). Use `VendorExcerpt` when only an excerpt of it could be
+  checked, and `ThirdParty` for a mirror or a reseller's FAQ. The UI flags both.
+- **When firmware decides the login**, write two rows with the same models and a `firmware` line
+  each. Do not guess which applies.
+- **A camera with no factory login** (the account is made at first use) is `Login::Create`, not
+  a blank password.
+- **Say what the maker says about lockouts.** Meerkat never tries a login by itself: "Use this
+  login" only fills the fields.
+- **A firmware row links the maker's page.** Never a file, and never a mirror. `how` and
+  `warnings` repeat the maker's steps. `web_path` is the camera's own firmware page, only when
+  the maker's procedure shows its address. The app opens it only if a row names it. `upload`
+  records a published network upload, for information: Meerkat does not upload firmware.
+
+`cargo test -p meerkat-drivers` checks every row is sourced and well formed. Add your models to
+the tests that check each camera finds its own row.
 
 ## Testing it
 

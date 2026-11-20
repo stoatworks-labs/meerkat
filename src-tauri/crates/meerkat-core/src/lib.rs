@@ -16,8 +16,12 @@
 //!   chosen interface, plus a unicast sweep of routed ranges, at once.
 //! - [`alias`] — temporary addresses, so HTTP reaches a camera heard on the
 //!   wrong subnet.
+//! - [`catalog`] — what is known about a camera besides its protocol: the
+//!   login it left the factory with, and where its maker publishes firmware.
+//!   The shape and the matching rule; the rows are in `meerkat-drivers`.
 
 pub mod alias;
+pub mod catalog;
 pub mod driver;
 pub mod engine;
 pub mod http;
@@ -26,6 +30,7 @@ pub mod net;
 pub mod registry;
 
 pub use alias::Alias;
+pub use catalog::{Catalog, CatalogMatch, FirmwareEntry, Login, LoginEntry, Matched, Source, SourceKind};
 pub use driver::{Driver, DriverError, DriverInfo, OpCtx, Recovery, ScanCtx, WriteOutcome};
 pub use engine::{Engine, Event, Sandbox, ScanRequest, ScanSummary};
 pub use model::{Caps, Camera, Credentials, Mac, Method, NetConfig, Reach, Sighting};

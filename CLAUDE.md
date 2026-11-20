@@ -26,7 +26,7 @@ cd src-tauri && cargo run -p meerkat-cli -- scan --demo
   from `ctx.port()`. That is what keeps demo mode off the network (AGENTS.md §4).
 - The UI fixtures in `src/lib/fixtures/` are generated, not hand-written:
   from `src-tauri`, `cargo run -q -p meerkat-cli -- scan --demo --json > ../src/lib/fixtures/cameras.json`,
-  and likewise `ifaces --demo --json` and `drivers --json`.
+  and likewise `ifaces --demo --json`, `drivers --json` and `catalog --json`.
 - The desktop shell cannot be screen-driven here. Verify the command layer with the mock-runtime
   test in `src-tauri/src/lib.rs`, and the UI in a browser against the mock backend.
 

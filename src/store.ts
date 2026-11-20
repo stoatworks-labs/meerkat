@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import { api, message } from './lib/ipc';
-import type { Alias, AppInfo, Camera, Credentials, DriverInfo, EngineEvent, Level, LocalIface, NetConfig, ScanRequest, ScanSummary } from './types';
+import type { Alias, AppInfo, Camera, Catalog, Credentials, DriverInfo, EngineEvent, Level, LocalIface, NetConfig, ScanRequest, ScanSummary } from './types';
 
 export interface Scope {
   /** Interfaces to broadcast on; null means every usable one. */
@@ -33,6 +33,13 @@ export interface Watch {
 /** How long a watch keeps scanning: a camera reset to DHCP can take a minute to settle. */
 export const WATCH_MS = 5 * 60_000;
 
+/** The reference list of factory logins and firmware pages, open on one table. */
+export interface Reference {
+  tab: 'logins' | 'firmware';
+  /** Shown first, or alone; null for every brand. */
+  brand: string | null;
+}
+
 /** Where a change to one camera has got to. */
 export interface Job {
   state: 'sending' | 'waiting' | 'done' | 'failed';
@@ -44,6 +51,8 @@ interface State {
   info: AppInfo | null;
   ifaces: LocalIface[];
   drivers: DriverInfo[];
+  /** Factory logins and firmware links, fetched once. */
+  catalog: Catalog;
   cameras: Record<string, Camera>;
   selected: string | null;
   checked: string[];
@@ -60,6 +69,7 @@ interface State {
   /** The driver whose recovery tool dialog is open. */
   recoveryFor: string | null;
   watch: Watch | null;
+  reference: Reference | null;
 
   init(): Promise<void>;
   scan(): Promise<void>;
@@ -74,7 +84,8 @@ interface State {
   setDemo(on: boolean): Promise<void>;
   apply(id: string, cfg: NetConfig, creds: Credentials | null): Promise<boolean>;
   readNetwork(id: string, creds: Credentials | null): Promise<NetConfig | null>;
-  openWeb(id: string): Promise<void>;
+  /** `path`: a page inside it that the catalogue names. */
+  openWeb(id: string, path?: string): Promise<void>;
   toggleLog(): void;
   dismissError(): void;
   planAlias(id: string): Promise<{ alias: Alias } | { error: string }>;
@@ -82,6 +93,7 @@ interface State {
   addAlias(alias: Alias): Promise<string | null>;
   removeAlias(alias: Alias | null): Promise<void>;
   openRecovery(driver: string | null): void;
+  openReference(r: Reference | null): void;
   startWatch(driver: string): Promise<void>;
   stopWatch(): Promise<void>;
 }
@@ -182,6 +194,7 @@ export const useStore = create<State>((set, get) => {
     info: null,
     ifaces: [],
     drivers: [],
+    catalog: { logins: [], firmware: [] },
     cameras: {},
     selected: null,
     checked: [],
@@ -196,14 +209,15 @@ export const useStore = create<State>((set, get) => {
     aliases: [],
     recoveryFor: null,
     watch: null,
+    reference: null,
 
     async init() {
       const b = await api();
       unlisten?.();
       unlisten = await b.onEvent(onEvent);
       try {
-        const [info, ifaces, drivers, cams, aliases] = await Promise.all([b.appInfo(), b.interfaces(), b.drivers(), b.cameras(), b.aliases()]);
-        set({ info, ifaces, drivers, aliases, cameras: Object.fromEntries(cams.map((c) => [c.id, c])), ready: true });
+        const [info, ifaces, drivers, catalog, cams, aliases] = await Promise.all([b.appInfo(), b.interfaces(), b.drivers(), b.catalog(), b.cameras(), b.aliases()]);
+        set({ info, ifaces, drivers, catalog, aliases, cameras: Object.fromEntries(cams.map((c) => [c.id, c])), ready: true });
       } catch (e) {
         set({ error: message(e), ready: true });
       }
@@ -313,9 +327,9 @@ export const useStore = create<State>((set, get) => {
       }
     },
 
-    async openWeb(id) {
+    async openWeb(id, path) {
       try {
-        const url = await (await api()).openWebUi(id);
+        const url = await (await api()).openWebUi(id, path);
         if (!('__TAURI_INTERNALS__' in window)) window.open(url, '_blank', 'noopener');
       } catch (e) {
         set({ error: message(e) });
@@ -368,6 +382,10 @@ export const useStore = create<State>((set, get) => {
 
     openRecovery(driver) {
       set({ recoveryFor: driver });
+    },
+
+    openReference(reference) {
+      set({ reference });
     },
 
     async startWatch(driver) {

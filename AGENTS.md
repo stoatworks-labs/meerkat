@@ -21,7 +21,8 @@ src-tauri/src/lib.rs     Tauri commands: a thin layer over the engine, plus its 
 src-tauri/crates/
   meerkat-core/          Engine, registry (merge), Driver trait, contexts, net helpers, Http,
                          alias (temporary addresses)
-  meerkat-drivers/       panasonic, sony, birddog, vhd, onvif, ndi (+ udp/util helpers)
+  meerkat-drivers/       panasonic, sony, birddog, vhd, onvif, ndi (+ udp/util helpers);
+                         logins.rs and firmware.rs, the catalogue rows
   meerkat-sim/           Simulated cameras for every protocol, and tests/e2e.rs
   meerkat-cli/           The engine from a terminal (binary meerkat-cli)
 docs/drivers.md          How to add a brand
@@ -80,9 +81,23 @@ Writes go through `Engine::write_network`, which checks caps, validity, DHCP sup
 clashes and reachability before calling the driver. Then `Engine::verify` rediscovers the
 camera at its new address in the same row.
 
+### The catalogue (catalog.rs)
+
+Factory logins and firmware download pages are tables, not driver code. `catalog.rs` holds the
+shape and `pick`, the one matching rule. The rows are `meerkat-drivers` `logins.rs` and
+`firmware.rs`, because the core knows no brand. `Engine::new(drivers, catalog)` takes them, and
+`absorb` sets `Camera::catalog` (matched ids, and whether they are exact or a brand hint) on
+every camera it records. The UI fetches the full tables once (the `catalog` command) and draws
+rows by id. `open_web_ui` takes a `path` only if a firmware row names it.
+
+Every row has sources: see docs/drivers.md for the rules. Nothing in the catalogue touches a
+camera. **Never make Meerkat try a login on its own**: Sony's FR7 locks an address out for 60
+seconds after 8 wrong passwords, and others do worse. Meerkat links to firmware but never
+downloads, hosts or uploads it.
+
 ## 4. The sandbox (demo mode), and why `ctx.to()` matters
 
-`Engine::sandboxed(drivers, Sandbox)` replaces the interface list with the simulator's `sim0`
+`Engine::sandboxed(drivers, catalog, Sandbox)` replaces the interface list with the simulator's `sim0`
 (192.168.10.20/24), binds every socket to 127.0.0.1, overrides discovery ports through the port
 map, and rewrites every destination through a `Route`:
 

@@ -26,7 +26,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use meerkat_core::driver::{DefaultLogin, Leg, Level, Result};
+use meerkat_core::driver::{Leg, Level, Result};
 use meerkat_core::net::{self, mask_to_prefix, prefix_to_mask, udp_socket, UdpOpts};
 use meerkat_core::{Caps, Camera, Driver, DriverError, DriverInfo, Mac, Method, NetConfig, OpCtx, ScanCtx, WriteOutcome};
 use tokio::net::UdpSocket;
@@ -149,7 +149,6 @@ impl Driver for Sony {
             priority: 70,
             discovery: vec!["UDP broadcast \"ENQ:network\" to 52380 — finds cameras on any address on the same wire"],
             sweep: Some("UDP \"ENQ:network\" to <ip>:52380 and a VISCA version inquiry to <ip>:52381"),
-            default_login: Some(DefaultLogin { username: "admin", password: "Admin_1234" }),
             notes: vec![
                 "No password is needed to change the address, but the camera must allow it: on BRC-AM7 and ILME-FR7 IP setup locks itself 20 minutes after power-on.",
                 "The camera name is at most 8 letters, digits or spaces.",

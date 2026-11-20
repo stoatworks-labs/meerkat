@@ -4,10 +4,11 @@
 // behaviour is a sketch: a write moves the camera and nothing more. The
 // protocols themselves are tested in Rust against meerkat-sim.
 
-import type { Alias, Camera, DriverInfo, EngineEvent, LocalIface, NetConfig, WriteOutcome } from '../types';
+import type { Alias, Camera, Catalog, DriverInfo, EngineEvent, LocalIface, NetConfig, WriteOutcome } from '../types';
 import type { Backend } from './ipc';
 import { fmtIp, inSubnet, network, parseIp } from './net';
 import fixtureCameras from './fixtures/cameras.json';
+import fixtureCatalog from './fixtures/catalog.json';
 import fixtureDrivers from './fixtures/drivers.json';
 import fixtureIfaces from './fixtures/ifaces.json';
 
@@ -39,6 +40,7 @@ export function mockBackend(): Backend {
     setDemo: async () => ({ version: '0.1.0', demo: true, platform: 'browser' }),
     interfaces: async () => ifaces(),
     drivers: async () => fixtureDrivers as DriverInfo[],
+    catalog: async () => fixtureCatalog as Catalog,
     cameras: async () => [...found.values()],
     async scan(req) {
       cancel = false;
@@ -97,10 +99,12 @@ export function mockBackend(): Backend {
       if (c) emit({ type: 'camera', camera: structuredClone(c), replaces: [] });
       return c;
     },
-    async openWebUi(id) {
+    async openWebUi(id, path) {
       const c = found.get(id);
       if (!c?.webUrl) throw 'this camera has no web UI address';
-      return c.webUrl;
+      if (!path) return c.webUrl;
+      if (!(fixtureCatalog as Catalog).firmware.some((r) => r.webPath === path)) throw `${path} is not a page Meerkat knows`;
+      return new URL(path, c.webUrl).toString();
     },
     aliases: async () => aliases,
     async planAlias(id) {

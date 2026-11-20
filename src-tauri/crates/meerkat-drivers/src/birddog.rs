@@ -21,7 +21,7 @@ use std::net::Ipv4Addr;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use meerkat_core::driver::{DefaultLogin, Recovery, Result};
+use meerkat_core::driver::{Recovery, Result};
 use meerkat_core::net::{mask_to_prefix, prefix_to_mask};
 use meerkat_core::{Caps, Camera, Driver, DriverError, DriverInfo, Mac, NetConfig, OpCtx, ScanCtx, WriteOutcome};
 use serde_json::{json, Value};
@@ -107,7 +107,6 @@ impl Driver for BirdDog {
             priority: 60,
             discovery: vec!["Found through NDI (mDNS) and confirmed with GET :8080/about"],
             sweep: Some("HTTP GET :8080/version, then /about"),
-            default_login: Some(DefaultLogin { username: "", password: "birddog" }),
             notes: vec![
                 "Network settings can be changed over the API on X-series and MAX (firmware 6.x, /EthSetup). P-series and converters (5.5.x) are read-only here: change them in the web UI's Network page.",
                 "Out of the box a BirdDog uses DHCP and falls back to 192.168.100.100/24 after about 30 seconds without a lease.",

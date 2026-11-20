@@ -94,7 +94,6 @@ impl Driver for Ndi {
             priority: 10,
             discovery: vec!["mDNS browse for _ndi._tcp on each interface — also sees cameras on the wrong subnet"],
             sweep: None,
-            default_login: None,
             notes: vec!["Finds NDI cameras of any brand. Changing settings is left to the brand's own driver; an NDI source no driver recognises opens its web UI."],
             enabled_by_default: true,
             recovery: None,

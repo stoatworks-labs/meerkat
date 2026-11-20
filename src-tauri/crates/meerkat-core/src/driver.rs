@@ -53,14 +53,6 @@ pub enum DriverError {
 
 pub type Result<T, E = DriverError> = std::result::Result<T, E>;
 
-/// Default login for a vendor, offered in the UI and never sent unasked.
-#[derive(Clone, Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DefaultLogin {
-    pub username: &'static str,
-    pub password: &'static str,
-}
-
 /// What a driver is, for the UI's driver list and for merging.
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -76,7 +68,6 @@ pub struct DriverInfo {
     pub discovery: Vec<&'static str>,
     /// How it probes a single address in a routed sweep, if it can.
     pub sweep: Option<&'static str>,
-    pub default_login: Option<DefaultLogin>,
     pub notes: Vec<&'static str>,
     pub enabled_by_default: bool,
     /// The vendor's own tool for a camera nothing else can reach, if there is

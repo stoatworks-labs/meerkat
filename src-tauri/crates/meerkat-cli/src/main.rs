@@ -3,6 +3,7 @@
 //! ```text
 //! meerkat-cli ifaces
 //! meerkat-cli drivers
+//! meerkat-cli catalog [brand] [--json]
 //! meerkat-cli scan  [scope]
 //! meerkat-cli set   <camera> --ip A [--prefix N | --mask M] [--gw G] [--dns D]... [--name N] [--user U --pass P] [scope] [--yes]
 //! meerkat-cli set   <camera> --dhcp [--user U --pass P] [scope] [--yes]
@@ -15,6 +16,8 @@
 //! from `scan --json`. `set` scans first, so it knows how the camera was
 //! reached, then shows the change and sends it only with `--yes`. `--demo`
 //! runs everything against the built-in simulator instead of the network.
+//! `catalog` prints the factory logins and firmware links Meerkat knows, and
+//! `scan` names the rows that apply to each camera; neither touches a camera.
 
 use std::net::Ipv4Addr;
 use std::process::ExitCode;
@@ -23,11 +26,12 @@ use std::time::Duration;
 
 use meerkat_core::driver::Level;
 use meerkat_core::net::{in_subnet, mask_to_prefix, prefix_to_mask};
-use meerkat_core::{Camera, Credentials, Engine, Event, Mac, NetConfig, Reach, ScanRequest};
+use meerkat_core::{Camera, Catalog, Credentials, Engine, Event, Login, Mac, NetConfig, Reach, ScanRequest, Source, SourceKind};
 
 const USAGE: &str = "usage:
   meerkat-cli ifaces
   meerkat-cli drivers
+  meerkat-cli catalog [brand] [--json]
   meerkat-cli scan  [scope]
   meerkat-cli set   <camera> --ip A [--prefix N | --mask M] [--gw G] [--dns D]... [--name N] [--user U --pass P] [scope] [--yes]
   meerkat-cli set   <camera> --dhcp [--user U --pass P] [scope] [--yes]
@@ -127,15 +131,16 @@ async fn run(a: Args) -> Result<(), String> {
     // The simulator lives as long as the command when --demo is given.
     let (_sim, engine) = if a.demo {
         let sim = meerkat_sim::Sim::start(meerkat_sim::demo_cameras()).await.map_err(|e| format!("could not start the simulator: {e}"))?;
-        let engine = Engine::sandboxed(meerkat_drivers::all(), sim.sandbox());
+        let engine = Engine::sandboxed(meerkat_drivers::all(), meerkat_drivers::catalog(), sim.sandbox());
         (Some(sim), engine)
     } else {
-        (None, Engine::new(meerkat_drivers::all()))
+        (None, Engine::new(meerkat_drivers::all(), meerkat_drivers::catalog()))
     };
     let engine = Arc::new(engine);
     match a.cmd.as_str() {
         "ifaces" | "interfaces" => ifaces(&engine, a.json),
         "drivers" => drivers(&engine, a.json),
+        "catalog" | "logins" | "firmware" => catalog(engine.catalog(), a.target.as_deref(), a.json),
         "scan" => {
             let cams = scan(&engine, &a).await?;
             if a.json {
@@ -190,12 +195,85 @@ fn drivers(engine: &Engine, json: bool) -> Result<(), String> {
         if let Some(s) = &d.sweep {
             println!("    sweeps:   {s}");
         }
-        if let Some(l) = &d.default_login {
-            println!("    default login: {} / {}", l.username, l.password);
-        }
         for n in &d.notes {
             println!("    note: {n}");
         }
+    }
+    Ok(())
+}
+
+fn source_text(s: &Source) -> String {
+    let kind = match s.kind {
+        SourceKind::Vendor => "",
+        SourceKind::VendorExcerpt => " [excerpt only]",
+        SourceKind::ThirdParty => " [not the maker]",
+    };
+    format!("{}{kind}\n        {}", s.title, s.url)
+}
+
+/// The tables, whole or for one brand (any case).
+fn catalog(c: Catalog, brand: Option<&str>, json: bool) -> Result<(), String> {
+    let want = |b: &str| brand.is_none_or(|w| b.eq_ignore_ascii_case(w));
+    let logins: Vec<_> = c.logins.iter().filter(|r| want(r.brand)).collect();
+    let firmware: Vec<_> = c.firmware.iter().filter(|r| want(r.brand)).collect();
+    if logins.is_empty() && firmware.is_empty() {
+        let mut brands: Vec<&str> = c.logins.iter().map(|r| r.brand).chain(c.firmware.iter().map(|r| r.brand)).collect();
+        brands.sort_unstable();
+        brands.dedup();
+        return Err(format!("nothing for {}; the brands are {}", brand.unwrap_or("?"), brands.join(", ")));
+    }
+    if json {
+        println!("{}", serde_json::to_string_pretty(&serde_json::json!({ "logins": logins, "firmware": firmware })).unwrap());
+        return Ok(());
+    }
+    println!("FACTORY LOGINS — Meerkat never tries these on a camera.\n");
+    for r in &logins {
+        let login = match r.login {
+            Login::Factory { username: "", password } => format!("password {}", if password.is_empty() { "(blank)" } else { password }),
+            Login::Factory { username, password } => format!("{username} / {}", if password.is_empty() { "(blank)" } else { password }),
+            Login::Create { username: Some(u) } => format!("none: you set {u}'s password at the first login"),
+            Login::Create { username: None } => "none: you create the account at the first login".into(),
+        };
+        println!("{} {} — {login}", r.brand, r.family);
+        if let Some(f) = r.firmware {
+            println!("    firmware: {f}");
+        }
+        if r.change_at_first_login {
+            println!("    the camera makes you change it at the first login");
+        }
+        if let Some(l) = r.lockout {
+            println!("    lockout: {l}");
+        }
+        for n in r.notes {
+            println!("    note: {n}");
+        }
+        for s in r.sources {
+            println!("    source: {}", source_text(s));
+        }
+        println!();
+    }
+    println!("FIRMWARE — from the maker; Meerkat does not supply or upload it.\n");
+    for r in &firmware {
+        println!("{} {}\n    downloads: {}", r.brand, r.family, r.downloads);
+        if let Some(n) = r.downloads_note {
+            println!("        {n}");
+        }
+        for h in r.how {
+            println!("    how: {h}");
+        }
+        if let Some(p) = r.web_path {
+            println!("    the camera's firmware page: http://<camera>{p}");
+        }
+        for w in r.warnings {
+            println!("    warning: {w}");
+        }
+        if let Some(u) = r.upload {
+            println!("    published upload: {u}");
+        }
+        for s in r.sources {
+            println!("    source: {}", source_text(s));
+        }
+        println!();
     }
     Ok(())
 }

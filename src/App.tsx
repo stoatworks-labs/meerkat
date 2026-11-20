@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { BulkDialog } from './components/BulkDialog';
+import { ReferenceDialog } from './components/Catalog';
 import { CameraTable, useVisibleCameras } from './components/CameraTable';
 import { Detail } from './components/Detail';
 import { LogPanel } from './components/LogPanel';
@@ -106,6 +107,7 @@ export function App() {
       </div>
       <BulkDialog open={bulk} onClose={() => setBulk(false)} />
       <RecoveryDialog />
+      <ReferenceDialog />
     </div>
   );
 }

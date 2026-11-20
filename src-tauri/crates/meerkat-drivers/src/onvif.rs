@@ -24,7 +24,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use meerkat_core::driver::{DefaultLogin, Level, Result};
+use meerkat_core::driver::{Level, Result};
 use meerkat_core::http::{base64, Http};
 use meerkat_core::net::{self, udp_socket, UdpOpts};
 use meerkat_core::{Caps, Camera, Credentials, Driver, DriverError, DriverInfo, Mac, Method, NetConfig, OpCtx, ScanCtx, WriteOutcome};
@@ -271,7 +271,6 @@ impl Driver for Onvif {
             priority: 30,
             discovery: vec!["WS-Discovery Probe to 239.255.255.250:3702 on each interface"],
             sweep: Some("WS-Discovery Probe to <ip>:3702"),
-            default_login: Some(DefaultLogin { username: "admin", password: "" }),
             notes: vec![
                 "Covers brands without their own driver (AVer, Lumens, Marshall, PTZOptics, Avonic and others), when ONVIF is switched on in the camera.",
                 "Needs the camera's login to read or change settings.",

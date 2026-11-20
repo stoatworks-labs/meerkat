@@ -132,6 +132,12 @@ pub fn guess_vendor(s: &str) -> Option<&'static str> {
         "Avonic"
     } else if has("BOLIN") {
         "Bolin"
+    } else if has("VADDIO") || has("ROBOSHOT") || has("PRIMESHOT") {
+        "Vaddio"
+    } else if has("ZOWIE") {
+        "Zowietek"
+    } else if has("TELYCAM") {
+        "Telycam"
     } else if has("AXIS") {
         "Axis"
     } else {

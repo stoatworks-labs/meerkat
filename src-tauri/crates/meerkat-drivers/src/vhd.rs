@@ -18,7 +18,7 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use meerkat_core::driver::{DefaultLogin, Level, Result};
+use meerkat_core::driver::{Level, Result};
 use meerkat_core::net::{self, mask_to_prefix, udp_socket, UdpOpts};
 use meerkat_core::{Caps, Camera, Driver, DriverInfo, Mac, Method, NetConfig, ScanCtx};
 use tokio::time::Instant;
@@ -92,7 +92,6 @@ impl Driver for Vhd {
             priority: 50,
             discovery: vec!["Multicast \"SEARCH * UPGRADE\" to 239.255.255.251:8005 (answers are multicast too)"],
             sweep: None,
-            default_login: Some(DefaultLogin { username: "admin", password: "admin" }),
             notes: vec![
                 "Discovery only: the platform's set command is not verified on hardware, so change these cameras' addresses in their web UI, or over ONVIF.",
                 "Seen on PTZOptics and other cameras built on the ValueHD platform.",

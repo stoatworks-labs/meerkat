@@ -13,7 +13,7 @@
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use meerkat_core::{Alias, Camera, Credentials, DriverInfo, Engine, Event, LocalIface, NetConfig, ScanRequest, ScanSummary, WriteOutcome};
+use meerkat_core::{Alias, Camera, Catalog, Credentials, DriverInfo, Engine, Event, LocalIface, NetConfig, ScanRequest, ScanSummary, WriteOutcome};
 use serde::Serialize;
 use tauri::{AppHandle, Builder, Emitter, Manager, RunEvent, Runtime, State};
 use tauri_plugin_opener::OpenerExt;
@@ -66,10 +66,10 @@ async fn set_demo(state: State<'_, AppState>, on: bool) -> Result<AppInfo, Strin
     }
     if on {
         let sim = meerkat_sim::Sim::start(meerkat_sim::demo_cameras()).await.map_err(|e| format!("could not start the simulator: {e}"))?;
-        *state.engine.lock().unwrap() = Arc::new(Engine::sandboxed(meerkat_drivers::all(), sim.sandbox()));
+        *state.engine.lock().unwrap() = Arc::new(Engine::sandboxed(meerkat_drivers::all(), meerkat_drivers::catalog(), sim.sandbox()));
         *state.sim.lock().unwrap() = Some(sim);
     } else {
-        *state.engine.lock().unwrap() = Arc::new(Engine::new(meerkat_drivers::all()));
+        *state.engine.lock().unwrap() = Arc::new(Engine::new(meerkat_drivers::all(), meerkat_drivers::catalog()));
         *state.sim.lock().unwrap() = None;
     }
     Ok(info(&state))
@@ -83,6 +83,13 @@ fn interfaces(state: State<AppState>) -> Result<Vec<LocalIface>, String> {
 #[tauri::command]
 fn drivers(state: State<AppState>) -> Vec<DriverInfo> {
     state.engine().drivers()
+}
+
+/// The factory logins and firmware links, whole: the UI fetches them once and
+/// shows the rows each camera's `catalog` names.
+#[tauri::command]
+fn catalog(state: State<AppState>) -> Catalog {
+    state.engine().catalog()
 }
 
 #[tauri::command]
@@ -149,13 +156,31 @@ async fn verify<R: Runtime>(app: AppHandle<R>, state: State<'_, AppState>, id: S
 
 /// Open a camera's own web interface in the system browser. Returns the URL
 /// opened (in demo mode, the simulator's page on loopback).
+///
+/// `path` opens a page inside it instead, and must be one the catalogue
+/// names (a maker's firmware page), so the webview cannot point the browser
+/// anywhere else.
 #[tauri::command]
-fn open_web_ui<R: Runtime>(app: AppHandle<R>, state: State<AppState>, id: String) -> Result<String, String> {
+fn open_web_ui<R: Runtime>(app: AppHandle<R>, state: State<AppState>, id: String, path: Option<String>) -> Result<String, String> {
     let engine = state.engine();
     let cam = engine.camera(&id).ok_or("that camera is no longer in the list")?;
-    let url = engine.browser_url(cam.web_url.as_deref().ok_or("this camera has no web UI address")?);
+    let url = web_page(&engine, &cam, path.as_deref())?;
     app.opener().open_url(&url, None::<&str>).map_err(|e| format!("could not open a browser: {e}"))?;
     Ok(url)
+}
+
+fn web_page(engine: &Engine, cam: &Camera, path: Option<&str>) -> Result<String, String> {
+    let base = cam.web_url.as_deref().ok_or("this camera has no web UI address")?;
+    let url = match path {
+        None => base.to_string(),
+        Some(p) => {
+            if !engine.catalog().firmware.iter().any(|r| r.web_path == Some(p)) {
+                return Err(format!("{p} is not a page Meerkat knows"));
+            }
+            tauri::Url::parse(base).and_then(|u| u.join(p)).map_err(|e| format!("bad web UI address {base}: {e}"))?.to_string()
+        }
+    };
+    Ok(engine.browser_url(&url))
 }
 
 /// The temporary addresses Meerkat has added (see `meerkat_core::alias`).
@@ -207,14 +232,14 @@ pub fn run() {
     let demo = std::env::var("MEERKAT_DEMO").is_ok_and(|v| !v.is_empty() && v != "0") || std::env::args().any(|a| a == "--demo");
     let (engine, sim) = if demo {
         match tauri::async_runtime::block_on(meerkat_sim::Sim::start(meerkat_sim::demo_cameras())) {
-            Ok(sim) => (Engine::sandboxed(meerkat_drivers::all(), sim.sandbox()), Some(sim)),
+            Ok(sim) => (Engine::sandboxed(meerkat_drivers::all(), meerkat_drivers::catalog(), sim.sandbox()), Some(sim)),
             Err(e) => {
                 eprintln!("meerkat: could not start the simulator ({e}); using the network");
-                (Engine::new(meerkat_drivers::all()), None)
+                (Engine::new(meerkat_drivers::all(), meerkat_drivers::catalog()), None)
             }
         }
     } else {
-        (Engine::new(meerkat_drivers::all()), None)
+        (Engine::new(meerkat_drivers::all(), meerkat_drivers::catalog()), None)
     };
     app(tauri::Builder::default(), AppState { engine: Mutex::new(Arc::new(engine)), sim: Mutex::new(sim) })
         .build(tauri::generate_context!())
@@ -241,6 +266,7 @@ fn app<R: Runtime>(builder: Builder<R>, state: AppState) -> Builder<R> {
         set_demo,
         interfaces,
         drivers,
+        catalog,
         cameras,
         scan,
         stop_scan,
@@ -291,7 +317,7 @@ mod tests {
     #[test]
     fn the_ui_commands_scan_readdress_and_verify_in_demo_mode() {
         let sim = tauri::async_runtime::block_on(meerkat_sim::Sim::start(meerkat_sim::demo_cameras())).expect("simulator");
-        let engine = Engine::sandboxed(meerkat_drivers::all(), sim.sandbox());
+        let engine = Engine::sandboxed(meerkat_drivers::all(), meerkat_drivers::catalog(), sim.sandbox());
         let state = AppState { engine: Mutex::new(Arc::new(engine)), sim: Mutex::new(Some(sim)) };
         let app = app(mock_builder(), state).build(mock_context(noop_assets())).expect("app");
         let w = WebviewWindowBuilder::new(&app, "main", Default::default()).build().expect("window");
@@ -303,6 +329,14 @@ mod tests {
         let info = call(&w, "app_info", json!({})).unwrap();
         assert_eq!(info["demo"], true, "{info}");
         assert!(call(&w, "drivers", json!({})).unwrap().as_array().unwrap().len() >= 6);
+
+        // The catalogue comes whole, rows without their match patterns.
+        let catalog = call(&w, "catalog", json!({})).unwrap();
+        let logins = catalog["logins"].as_array().unwrap();
+        assert!(logins.len() > 20 && catalog["firmware"].as_array().unwrap().len() > 20, "{catalog}");
+        let bd = logins.iter().find(|r| r["id"] == "birddog-p").unwrap();
+        assert_eq!(bd["login"], json!({ "kind": "factory", "username": "", "password": "birddog" }));
+        assert!(bd.get("models").is_none() && bd.get("vendors").is_none(), "{bd}");
         let ifaces = call(&w, "interfaces", json!({})).unwrap();
         assert_eq!(ifaces[0]["name"], "sim0", "{ifaces}");
 
@@ -313,6 +347,21 @@ mod tests {
         assert_eq!(cams.len(), 8, "{summary}\n{cams:#?}");
         let streamed = events.lock().unwrap().iter().filter(|e| e["type"] == "camera").count();
         assert!(streamed >= 8, "{streamed} camera events");
+
+        // Each camera names its catalogue rows: a match for a known model, a
+        // hint from its brand when the model is unknown.
+        let ue150 = cams.iter().find(|c| c["mac"] == "00:80:45:1a:2b:01").expect("UE150");
+        assert_eq!(ue150["catalog"]["firmware"], json!({ "ids": ["panasonic-ue150"], "exact": true }));
+        let sony = cams.iter().find(|c| c["vendor"] == "Sony").expect("Sony");
+        assert_eq!(sony["catalog"]["logins"]["exact"], false, "{sony}");
+
+        // Only a page the catalogue names opens inside a camera's web UI.
+        let engine = app.state::<AppState>().engine();
+        let canon = Camera { web_url: Some("http://192.168.10.30/".into()), ..Camera::new("onvif", "Canon", "192.168.10.30".parse().unwrap()) };
+        assert_eq!(web_page(&engine, &canon, Some("/admin/system/firmup")).unwrap().split_once("/admin").unwrap().1, "/system/firmup");
+        assert!(web_page(&engine, &canon, Some("//example.com/x")).is_err());
+        let e = call(&w, "open_web_ui", json!({ "id": ue150["id"], "path": "/elsewhere" })).unwrap_err();
+        assert!(e.as_str().is_some_and(|s| s.contains("not a page")), "{e}");
 
         // Move the wrong-subnet Panasonic onto sim0's subnet, as the Apply button does.
         let p = cams.iter().find(|c| c["mac"] == "00:80:45:1a:2b:01").expect("UE150");

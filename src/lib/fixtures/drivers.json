@@ -8,10 +8,6 @@
       "UDP broadcast to 10670, answers by broadcast to 10669 — finds cameras on any address on the same wire"
     ],
     "sweep": "HTTP GET /cgi-bin/aw_cam?cmd=QID (model) and /cgi-bin/getinfo?FILE=1 (MAC)",
-    "defaultLogin": {
-      "username": "admin",
-      "password": "12345"
-    },
     "notes": [
       "Cameras accept new settings only in the first 20 minutes after power-on, unless the camera's \"Easy IP Setup accommodate period\" is Unlimited. No answer to a change usually means the window has closed: power-cycle the camera and try again.",
       "Easy IP is layer 2: it re-addresses a camera on the wrong subnet, but cannot cross a router.",
@@ -30,10 +26,6 @@
       "UDP broadcast \"ENQ:network\" to 52380 — finds cameras on any address on the same wire"
     ],
     "sweep": "UDP \"ENQ:network\" to <ip>:52380 and a VISCA version inquiry to <ip>:52381",
-    "defaultLogin": {
-      "username": "admin",
-      "password": "Admin_1234"
-    },
     "notes": [
       "No password is needed to change the address, but the camera must allow it: on BRC-AM7 and ILME-FR7 IP setup locks itself 20 minutes after power-on.",
       "The camera name is at most 8 letters, digits or spaces.",
@@ -52,10 +44,6 @@
       "Found through NDI (mDNS) and confirmed with GET :8080/about"
     ],
     "sweep": "HTTP GET :8080/version, then /about",
-    "defaultLogin": {
-      "username": "",
-      "password": "birddog"
-    },
     "notes": [
       "Network settings can be changed over the API on X-series and MAX (firmware 6.x, /EthSetup). P-series and converters (5.5.x) are read-only here: change them in the web UI's Network page.",
       "Out of the box a BirdDog uses DHCP and falls back to 192.168.100.100/24 after about 30 seconds without a lease.",
@@ -85,10 +73,6 @@
       "Multicast \"SEARCH * UPGRADE\" to 239.255.255.251:8005 (answers are multicast too)"
     ],
     "sweep": null,
-    "defaultLogin": {
-      "username": "admin",
-      "password": "admin"
-    },
     "notes": [
       "Discovery only: the platform's set command is not verified on hardware, so change these cameras' addresses in their web UI, or over ONVIF.",
       "Seen on PTZOptics and other cameras built on the ValueHD platform."
@@ -105,10 +89,6 @@
       "WS-Discovery Probe to 239.255.255.250:3702 on each interface"
     ],
     "sweep": "WS-Discovery Probe to <ip>:3702",
-    "defaultLogin": {
-      "username": "admin",
-      "password": ""
-    },
     "notes": [
       "Covers brands without their own driver (AVer, Lumens, Marshall, PTZOptics, Avonic and others), when ONVIF is switched on in the camera.",
       "Needs the camera's login to read or change settings.",
@@ -126,7 +106,6 @@
       "mDNS browse for _ndi._tcp on each interface — also sees cameras on the wrong subnet"
     ],
     "sweep": null,
-    "defaultLogin": null,
     "notes": [
       "Finds NDI cameras of any brand. Changing settings is left to the brand's own driver; an NDI source no driver recognises opens its web UI."
     ],

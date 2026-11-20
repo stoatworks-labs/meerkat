@@ -3,6 +3,7 @@ import { Fragment, useState } from 'react';
 import { inSubnet, parseIp, parsePrefix, prefixToMask, problems, suggest } from '../lib/net';
 import { useStore } from '../store';
 import type { Camera, Credentials, NetConfig } from '../types';
+import { CameraFirmware, CameraLogins } from './Catalog';
 import { ReachIt } from './ReachIt';
 import { label, reachNote, ReachBadge, sightings, Spinner, title } from './ui';
 
@@ -151,14 +152,6 @@ function DetailFor({ cam }: { cam: Camera }) {
             ))}
           </ul>
         </dd>
-        {driver?.defaultLogin && (
-          <>
-            <dt>Factory login</dt>
-            <dd className="mono">
-              {driver.defaultLogin.username} / {driver.defaultLogin.password}
-            </dd>
-          </>
-        )}
         {extra.map(([k, v]) => (
           <Fragment key={k}>
             <dt>{FIELD_NAMES[k] ?? k}</dt>
@@ -166,6 +159,19 @@ function DetailFor({ cam }: { cam: Camera }) {
           </Fragment>
         ))}
       </dl>
+
+      <CameraLogins
+        cam={cam}
+        onUse={
+          canWrite && (needsCreds || optionalCreds)
+            ? (c) => {
+                setUser(c.username);
+                setPass(c.password);
+              }
+            : undefined
+        }
+      />
+      <CameraFirmware cam={cam} />
 
       <section className="netform">
         <h3>Network settings</h3>
@@ -255,18 +261,6 @@ function DetailFor({ cam }: { cam: Camera }) {
                     <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} autoComplete="off" />
                   </label>
                 </div>
-                {driver?.defaultLogin && !user && (
-                  <button
-                    type="button"
-                    className="link"
-                    onClick={() => {
-                      setUser(driver.defaultLogin!.username);
-                      setPass(driver.defaultLogin!.password);
-                    }}
-                  >
-                    Use the factory login
-                  </button>
-                )}
                 {needsCreds && cam.caps.readNetwork && (
                   <button
                     type="button"

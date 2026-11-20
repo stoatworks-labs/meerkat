@@ -10,7 +10,7 @@ use meerkat_sim::{demo_cameras, Sim};
 
 async fn rig() -> (Sim, Engine) {
     let sim = Sim::start(demo_cameras()).await.expect("simulator");
-    let engine = Engine::sandboxed(meerkat_drivers::all(), sim.sandbox());
+    let engine = Engine::sandboxed(meerkat_drivers::all(), meerkat_drivers::catalog(), sim.sandbox());
     (sim, engine)
 }
 
@@ -244,7 +244,7 @@ async fn a_temporary_address_lets_an_http_driver_readdress_a_wrong_subnet_camera
     x1.ip = ip("192.168.50.40");
     x1.gateway = ip("192.168.50.1");
     let sim = Sim::start(cams).await.expect("simulator");
-    let engine = Engine::sandboxed(meerkat_drivers::all(), sim.sandbox());
+    let engine = Engine::sandboxed(meerkat_drivers::all(), meerkat_drivers::catalog(), sim.sandbox());
 
     // Heard over NDI, out of reach: no driver can change it from here.
     let (found, _) = scan(&engine).await;

@@ -15,6 +15,7 @@ use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
 
 use crate::alias::{self, Alias, AliasBackend, NoAliases, SystemAliases};
+use crate::catalog::Catalog;
 use crate::driver::{Driver, DriverInfo, Leg, Level, Msg, OpCtx, PortMap, ScanCtx, WriteOutcome};
 use crate::http::{Http, Route};
 use crate::model::{Camera, Credentials, Method, NetConfig, Reach};
@@ -108,12 +109,15 @@ pub struct Engine {
     /// subnet (see [`crate::alias`]). Removed by [`Engine::remove_aliases`].
     aliases: Mutex<Vec<Alias>>,
     alias_backend: Arc<dyn AliasBackend>,
+    /// Factory logins and firmware pages, matched to each camera as it lands.
+    catalog: Catalog,
 }
 
 impl Engine {
-    pub fn new(drivers: Vec<Arc<dyn Driver>>) -> Self {
+    pub fn new(drivers: Vec<Arc<dyn Driver>>, catalog: Catalog) -> Self {
         Engine {
             drivers,
+            catalog,
             registry: Mutex::new(Registry::default()),
             ifaces: Mutex::new(Vec::new()),
             chosen: Mutex::new(Vec::new()),
@@ -127,8 +131,13 @@ impl Engine {
     /// An engine that only ever talks to a simulator. Its temporary addresses
     /// are pretend too: they join the sandbox's interface list and nothing
     /// else.
-    pub fn sandboxed(drivers: Vec<Arc<dyn Driver>>, sandbox: Sandbox) -> Self {
-        Engine { sandbox: Some(sandbox), alias_backend: Arc::new(NoAliases), ..Engine::new(drivers) }
+    pub fn sandboxed(drivers: Vec<Arc<dyn Driver>>, catalog: Catalog, sandbox: Sandbox) -> Self {
+        Engine { sandbox: Some(sandbox), alias_backend: Arc::new(NoAliases), ..Engine::new(drivers, catalog) }
+    }
+
+    /// The catalogue's tables, for the UI's reference list.
+    pub fn catalog(&self) -> Catalog {
+        self.catalog
     }
 
     pub fn is_sandboxed(&self) -> bool {
@@ -519,11 +528,15 @@ impl Engine {
         let mut merged = up.camera;
         merged.reach = reach(&merged, all);
         merged.web_url = self.driver(&merged.driver).and_then(|d| d.web_url(&merged));
+        // The vendor and model may only now be known (ONVIF names a camera
+        // NDI found first), so this is worked out again on every sighting.
+        merged.catalog = self.catalog.about(&merged);
         {
             let mut reg = self.registry.lock().unwrap();
             if let Some(c) = reg_get_mut(&mut reg, &merged.id) {
                 c.reach = merged.reach.clone();
                 c.web_url = merged.web_url.clone();
+                c.catalog = merged.catalog.clone();
             }
         }
         Event::Camera { camera: Box::new(merged), replaces: up.replaces }
